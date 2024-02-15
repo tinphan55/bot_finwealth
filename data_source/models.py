@@ -2,6 +2,15 @@ from django.db import models
 from datetime import datetime, timedelta, time
 # Create your models here.
 
+class DateTrading(models.Model):
+    date = models.DateField(unique=False)
+    description = models.TextField(max_length=255, blank=True)
+    def __str__(self):
+        return str(self.date) 
+    class Meta:
+         verbose_name = 'Ngày giao dịch'
+         verbose_name_plural = 'Ngày giao dịch'
+
 class StockPrice(models.Model):
     ticker = models.CharField(max_length=10)
     date = models.DateField()#auto_now_add=True)

@@ -2,27 +2,23 @@ import psycopg2
 import pandas as pd
 from sqlalchemy import create_engine, text
 from urllib.parse import quote_plus
+import os
 
-
-database_config = [
-    #data trade
-    {'host': "103.176.22.191",
-    'database': "superset",
-    'user': "superset",
-    'password': "Ecotrading2023",
-    'port': "5432"},
-    #data giá 
-    {'host': "103.176.251.105",
-    'database': "ecotrading",
-    'user': "admin",
-    'password': "Ecotr@ding2023",
-    'port': "5432"},
+DATABASES_LIST = [
+    {
+        'host': os.getenv('DB_HOST'),
+        'database': os.getenv('DB_NAME'),
+        'user': os.getenv('DB_USER'),
+        'password': os.getenv('DB_PASSWORD'),
+        'port': os.getenv('DB_PORT'),
+        }
 ]
+database_config = DATABASES_LIST[0]
 
 
-def connect(num):
+def connect():
     """ Connect to the PostgreSQL database server """
-    database = database_config[num]
+    database = database_config
     db_connection = None
     try:
         db_connection = psycopg2.connect(
@@ -43,8 +39,8 @@ def connect(num):
             #print("Database connect error")
             exit()
 
-def query_data(num,query):
-    db_connection = connect(num)
+def query_data(query):
+    db_connection = connect()
     cur = db_connection.cursor()
     cur.execute(query)
     try:
@@ -55,8 +51,8 @@ def query_data(num,query):
         data = []  # Trả về danh sách rỗng nếu không có kết quả
     return data
 
-def execute_query(num,query, data=None):
-    db_connection = connect(num)
+def execute_query(query, data=None):
+    db_connection = connect()
     cur = db_connection.cursor()
     try:
         if data is None:
@@ -73,8 +69,8 @@ def execute_query(num,query, data=None):
         db_connection.close()
 
 
-def engine (num):
-    database = database_config[num]
+def engine ():
+    database = database_config
     host = database['host']
     port = database['port']
     database_name = database['database']
@@ -83,9 +79,9 @@ def engine (num):
     engine = create_engine(f'postgresql://{user}:{password}@{host}:{port}/{database_name}')
     return engine
 
-def read_sql_to_df(num, query):
+def read_sql_to_df(query):
     # Kết nối tới cơ sở dữ liệu PostgreSQL
-    db_connection = engine (num)
+    db_connection = engine ()
     # Tạo kết nối
     conn = db_connection.connect()
     # Chuyển đối tượng truy vấn sang dạng text

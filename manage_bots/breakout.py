@@ -10,7 +10,7 @@ import backtrader.feeds as btfeed
 import pandas as pd
 import matplotlib.pyplot as plt
 import backtrader.analyzers as btanalyzers
-from stocklist.logic import *
+from manage_bots.logic import *
 from django.shortcuts import render
 from backtrader.observer import Observer
 from statistics import mean
@@ -22,17 +22,18 @@ from django.http import JsonResponse
 def custom_date_parser(date_string):
       return pd.to_datetime(date_string, format='%Y-%m-%d')
 
-def difine_stock_date_to_sell(buy_date):
-    t = 0
-    while t != 2:  
-        buy_date = buy_date + timedelta(days=1)
-        weekday = buy_date.weekday() 
-        check_in_dates =  DateNotTrading.objects.filter(date=buy_date).exists()
-        if check_in_dates or weekday == 5 or weekday == 6:
-            pass
-        else:
-            t += 1
-    return buy_date
+
+# Can chinh lai xac dinh ngay khong giao dich
+def define_stock_date_to_sell(buy_date, days=2):
+    next_trading_date = None
+    # Tính ngày kết thúc
+    end_date = buy_date + timedelta(days=days)
+    # Lấy tất cả các ngày giao dịch từ buy_date đến end_date và sắp xếp theo thứ tự tăng dần
+    trading_dates = DateTrading.objects.filter(date__gt=buy_date, date__lte=end_date).order_by('date')
+    # Kiểm tra nếu có ngày giao dịch tiếp theo
+    if trading_dates.exists():
+        next_trading_date = trading_dates.first().date
+    return next_trading_date
 
 
 dict_params = {
@@ -138,7 +139,7 @@ class breakout_otm(bt.SignalStrategy):
                     self.trailing_tp = self.trailing_tp+self.trailing_offset
                 if self.data.close < self.trailing_sl:
                     self.date_sell =datetime.fromordinal(int(self.data.datetime[1]))
-                    if self.date_sell >= difine_stock_date_to_sell(self.buy_date):
+                    if self.date_sell >= define_stock_date_to_sell(self.buy_date):
                         self.close()
                         if self.save_deal ==True:
                             self.sell_price =self.data.open[1]
