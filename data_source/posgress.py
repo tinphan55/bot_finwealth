@@ -6,7 +6,7 @@ import os
 
 DATABASES_LIST = [
     {
-        'host': os.getenv('DB_HOST'),
+        'host': '103.176.23.51',
         'database': os.getenv('DB_NAME'),
         'user': os.getenv('DB_USER'),
         'password': os.getenv('DB_PASSWORD'),
