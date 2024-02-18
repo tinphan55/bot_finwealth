@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, time
 
 class DateTrading(models.Model):
     date = models.DateField(unique=False)
-    # description = models.TextField(max_length=255, blank=True)
+    description = models.TextField(max_length=255, blank=True)
     def __str__(self):
         return str(self.date) 
     class Meta:
