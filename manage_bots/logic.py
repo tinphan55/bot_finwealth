@@ -189,11 +189,11 @@ def date_filter_breakout_strategy(df, risk, date_filter, strategy):
             #check nếu không có tín hiệu nào trước đó hoặc tín hiệu đã có nhưng ngược với tín hiệu hiện tại 
             if lated_signal is None:
                 back_test= OverviewBacktest.objects.filter(ticker=data['ticker'],strategy=strategy).first()
-                fa = StockFundamentalData.objects.filter(ticker =data['ticker'] ).first()
+                # fa = StockFundamentalData.objects.filter(ticker =data['ticker'] ).first()
                 if back_test:
                     data['rating'] = back_test.rating_total
-                    data['fundamental'] = fa.fundamental_rating
-                    if data['rating'] > 50 and data['fundamental']> 50:
+                    # data['fundamental'] = fa.fundamental_rating
+                    if data['rating'] > 50: #and data['fundamental']> 50:
                         buy_today.append(data)
     # tạo lệnh mua tự động
     buy_today.sort(key=lambda x: x['rating'], reverse=True)
