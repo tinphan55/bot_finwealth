@@ -3,7 +3,6 @@ from django.db.models import Avg
 import sys
 from itertools import product
 import numpy as np
-import talib
 from datetime import datetime, timedelta
 import backtrader as bt
 import backtrader.feeds as btfeed
@@ -236,7 +235,7 @@ def define_stock_not_test(strategy):
 
 def run_backtest(risk, begin_list, end_list):
     strategy_data = {
-        'name': 'Breakout ver 0.2',
+        'name': 'Breakout ver 0.1',
         'risk': risk,   
         'nav': 10000000,
         'commission' : 0.0015,
