@@ -194,6 +194,7 @@ def evaluate_strategy(params,nav,commission,size_class,data,strategy_class, tick
                         risk=params[3],
                         ratio_cutloss=params[4],
                         sma = params[5],
+                        len_sideway  =params[6],
                         )
     # Chạy backtest và tính toán chỉ số hiệu suất
     cerebro.run()
