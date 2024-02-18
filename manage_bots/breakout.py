@@ -308,7 +308,17 @@ def run_backtest(risk, begin_list, end_list):
                         'sma':best_params[5],
                         'len_sideway':best_params[6],
                 }
-                obj, created = ParamsOptimize.objects.update_or_create(strategy = strategy,ticker=ticker, defaults=params_data)
+
+                params_feild = {
+                        'param1': best_params[4],  # cat lo
+                        'param2': best_params[1],  # phí giao dịch
+                        'param3':best_params[2],
+                        'param4':best_params[0],
+                        'param5':best_params[5],
+                        'param6':best_params[6],
+                }
+
+                obj, created = ParamsOptimize.objects.update_or_create(strategy = strategy,ticker=ticker, defaults=params_feild)
                 print('Đã tạo param')
 
                 # Tạo một phiên giao dịch Backtrader mới
