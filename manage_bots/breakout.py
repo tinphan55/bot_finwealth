@@ -25,10 +25,11 @@ def custom_date_parser(date_string):
 # Can chinh lai xac dinh ngay khong giao dich
 def define_stock_date_to_sell(buy_date, days=2):
     next_trading_date = None
+    t_date = buy_date + timedelta(days=days)
     # Tính ngày kết thúc
-    end_date = buy_date + timedelta(days=days)
+    end_date = buy_date + timedelta(days=10)
     # Lấy tất cả các ngày giao dịch từ buy_date đến end_date và sắp xếp theo thứ tự tăng dần
-    trading_dates = DateTrading.objects.filter(date__gt=buy_date, date__lte=end_date).order_by('date')
+    trading_dates = DateTrading.objects.filter(date__gt=t_date, date__lte=end_date).order_by('date')
     # Kiểm tra nếu có ngày giao dịch tiếp theo
     if trading_dates.exists():
         next_trading_date = trading_dates.first().date
@@ -159,24 +160,24 @@ class breakout_otm(bt.SignalStrategy):
         return     
     
     # #giao dịch sẽ lấy giá open của phiên liền sau đó (không phải giá đóng cửa)
-    def notify_trade(self, trade):
-        date_open = self.data.datetime.datetime().strftime('%Y-%m-%d')
-        date_close = self.data.datetime.datetime().strftime('%Y-%m-%d')
-        if trade.justopened:
-            print('----TRADE OPENED----')
-            print(self.sma)
-            print('Date: {}'.format(date_open))
-            print('Price: {}'.format(trade.price))# cũng là print('Price: {}'.format(self.data.open[0]))
-            print('Size: {}'.format(trade.size))
-        elif trade.isclosed:
-            print('----TRADE CLOSED----')
-            print('Date: {}'.format(date_close))
-            print('Price: {}'.format(self.data.open[0]))
-            print('Profit, Gross {}, Net {}'.format(
-                                                round(trade.pnl,2),
-                                                round(trade.pnlcomm,2)))
-        else:
-            return 
+    # def notify_trade(self, trade):
+    #     date_open = self.data.datetime.datetime().strftime('%Y-%m-%d')
+    #     date_close = self.data.datetime.datetime().strftime('%Y-%m-%d')
+    #     if trade.justopened:
+    #         print('----TRADE OPENED----')
+    #         print(self.sma)
+    #         print('Date: {}'.format(date_open))
+    #         print('Price: {}'.format(trade.price))# cũng là print('Price: {}'.format(self.data.open[0]))
+    #         print('Size: {}'.format(trade.size))
+    #     elif trade.isclosed:
+    #         print('----TRADE CLOSED----')
+    #         print('Date: {}'.format(date_close))
+    #         print('Price: {}'.format(self.data.open[0]))
+    #         print('Profit, Gross {}, Net {}'.format(
+    #                                             round(trade.pnl,2),
+    #                                             round(trade.pnlcomm,2)))
+    #     else:
+    #         return 
 
 
 def evaluate_strategy(params,nav,commission,size_class,data,strategy_class, ticker, strategy):
