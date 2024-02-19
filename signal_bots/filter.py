@@ -42,11 +42,11 @@ def date_filter_breakout_strategy(df, risk, date_filter, strategy):
             #check nếu không có tín hiệu nào trước đó hoặc tín hiệu đã có nhưng ngược với tín hiệu hiện tại 
             if lated_signal is None:
                 back_test= OverviewBacktest.objects.filter(ticker=data['ticker'],strategy=strategy).first()
-                fa = StockFundamentalData.objects.filter(ticker =data['ticker'] ).first()
+                # fa = StockFundamentalData.objects.filter(ticker =data['ticker'] ).first()
                 if back_test:
                     data['rating'] = back_test.rating_total
-                    data['fundamental'] = fa.fundamental_rating
-                    if data['rating'] > 50 and data['fundamental']> 50:
+                    # data['fundamental'] = fa.fundamental_rating
+                    if data['rating'] > 50:# and data['fundamental']> 50:
                         buy_today.append(data)
     # tạo lệnh mua tự động
     buy_today.sort(key=lambda x: x['rating'], reverse=True)
@@ -125,7 +125,7 @@ def detect_divergences(P=20, order=5, K=2):
 
 
 
-def filter_stock_muanual( risk,strategy_1,strategy_2):
+def filter_stock_muanual( risk,strategy_1):
     print('đang chạy')
     strategy_breakout= StrategyTrading.objects.filter(name =strategy_1 , risk = risk).first()
     # strategy_tenisball= StrategyTrading.objects.filter(name =strategy_2 , risk = risk).first()
@@ -160,8 +160,8 @@ def filter_stock_muanual( risk,strategy_1,strategy_2):
 
 def filter_stock_daily(risk=0.03):
     strategy_1='Breakout ver 0.1'
-    strategy_2='Tenisball_ver0.1'
-    buy_today = filter_stock_muanual(risk,strategy_1,strategy_2)
+    # strategy_2='Tenisball_ver0.1'
+    buy_today = filter_stock_muanual(risk,strategy_1)#,strategy_2)
     date_filter = datetime.today().date() 
     external_room = ChatGroupTelegram.objects.filter(type = 'external',is_signal =True,rank ='1' )
     num_stock = len(buy_today)
@@ -194,7 +194,7 @@ def filter_stock_daily(risk=0.03):
                         cutloss_price =cut_loss_price,
                         exit_price = cut_loss_price,
                         rating_total = ticker['rating'],
-                        rating_fundamental = ticker['fundamental'] ,
+                        # rating_fundamental = ticker['fundamental'] ,
                         accumulation = ticker['accumulation']
                     )
                 # for group in external_room:
@@ -206,11 +206,12 @@ def filter_stock_daily(risk=0.03):
                 #         except:
                 #             pass
             except Exception as e:
+                        pass
                         # chat_id = account.bot.chat_id
-                        bot = Bot(token=account.bot.token)
-                        bot.send_message(
-                        chat_id='-870288807', #room nội bộ
-                        text=f"Không lưu được tín hiệu {ticker['ticker']}, lỗi {e}   ")        
+                        # bot = Bot(token=account.bot.token)
+                        # bot.send_message(
+                        # chat_id='-870288807', #room nội bộ
+                        # text=f"Không lưu được tín hiệu {ticker['ticker']}, lỗi {e}   ")        
     detect_divergences(P=20, order=5, K=2)
     return 
 
