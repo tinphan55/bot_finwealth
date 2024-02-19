@@ -3,7 +3,6 @@ from django.db.models import Avg
 import sys
 from itertools import product
 import numpy as np
-import talib
 from datetime import datetime, timedelta
 import backtrader as bt
 import backtrader.feeds as btfeed
@@ -135,7 +134,17 @@ def custom_date_parser(date_string):
 
 
 # Can chinh lai xac dinh ngay khong giao dich
-
+def define_stock_date_to_sell(buy_date, days=2):
+    next_trading_date = None
+    t_date = buy_date + timedelta(days=days)
+    # Tính ngày kết thúc
+    end_date = buy_date + timedelta(days=10)
+    # Lấy tất cả các ngày giao dịch từ buy_date đến end_date và sắp xếp theo thứ tự tăng dần
+    trading_dates = DateTrading.objects.filter(date__gt=t_date, date__lte=end_date).order_by('date')
+    # Kiểm tra nếu có ngày giao dịch tiếp theo
+    if trading_dates.exists():
+        next_trading_date = trading_dates.first().date
+    return next_trading_date
 
 
 dict_params = {
@@ -258,16 +267,16 @@ class breakout_otm(bt.SignalStrategy):
                             'take_profit': round(self.trailing_tp,2),
                             }
                             obj, created = TransactionBacktest.objects.update_or_create(strategy=self.strategy, ticker=self.ticker,date_buy = self.buy_date, defaults=data)     
-                             
-
+                        
         return     
     
-    # # #giao dịch sẽ lấy giá open của phiên liền sau đó (không phải giá đóng cửa)
+    # #giao dịch sẽ lấy giá open của phiên liền sau đó (không phải giá đóng cửa)
     # def notify_trade(self, trade):
     #     date_open = self.data.datetime.datetime().strftime('%Y-%m-%d')
     #     date_close = self.data.datetime.datetime().strftime('%Y-%m-%d')
     #     if trade.justopened:
     #         print('----TRADE OPENED----')
+    #         print(self.sma)
     #         print('Date: {}'.format(date_open))
     #         print('Price: {}'.format(trade.price))# cũng là print('Price: {}'.format(self.data.open[0]))
     #         print('Size: {}'.format(trade.size))
@@ -297,6 +306,7 @@ def evaluate_strategy(params,nav,commission,size_class,data,strategy_class, tick
                         risk=params[3],
                         ratio_cutloss=params[4],
                         sma = params[5],
+                        len_sideway  =params[6],
                         )
     # Chạy backtest và tính toán chỉ số hiệu suất
     cerebro.run()
@@ -338,13 +348,13 @@ def define_stock_not_test(strategy):
 
 def run_backtest(risk, begin_list, end_list):
     strategy_data = {
-        'name': 'Breakout ver 0.2',
+        'name': 'Breakout ver 0.1',
         'risk': risk,   
         'nav': 10000000,
         'commission' : 0.0015,
         'period':20}
     created = StrategyTrading.objects.update_or_create(name=strategy_data['name'],risk = risk, defaults=strategy_data)
-    strategy = StrategyTrading.objects.filter(name='Breakout ver 0.2',risk = risk).first()
+    strategy = StrategyTrading.objects.filter(name=strategy_data['name'],risk = risk).first()
     stock_source = StockPriceFilter.objects.values('ticker').annotate(avg_volume=Avg('volume'))
     stock_test= [ticker for ticker in stock_source if ticker['avg_volume'] > 100000]
     # stock_test = define_stock_not_test(strategy)
@@ -409,7 +419,17 @@ def run_backtest(risk, begin_list, end_list):
                         'sma':best_params[5],
                         'len_sideway':best_params[6],
                 }
-                obj, created = ParamsOptimize.objects.update_or_create(strategy = strategy,ticker=ticker, defaults=params_data)
+
+                params_feild = {
+                        'param1': best_params[4],  # cat lo
+                        'param2': best_params[1],  # phí giao dịch
+                        'param3':best_params[2],
+                        'param4':best_params[0],
+                        'param5':best_params[5],
+                        'param6':best_params[6],
+                }
+
+                obj, created = ParamsOptimize.objects.update_or_create(strategy = strategy,ticker=ticker, defaults=params_feild)
                 print('Đã tạo param')
 
                 # Tạo một phiên giao dịch Backtrader mới
