@@ -83,7 +83,7 @@ def accumulation_model_df(df):
 
 
 def breakout_strategy_otmed(df, risk):
-    strategy= StrategyTrading.objects.filter(name = 'Breakout ver 0.2', risk = risk).first()
+    strategy= StrategyTrading.objects.filter(name = 'Breakout ver 0.1', risk = risk).first()
     period = strategy.period
     num_raw =period + 5
     backtest = ParamsOptimize.objects.filter(strategy = strategy).values('ticker','param1','param2','param3','param4','param5','param6')

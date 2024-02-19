@@ -128,7 +128,7 @@ def detect_divergences(P=20, order=5, K=2):
 def filter_stock_muanual( risk,strategy_1,strategy_2):
     print('đang chạy')
     strategy_breakout= StrategyTrading.objects.filter(name =strategy_1 , risk = risk).first()
-    strategy_tenisball= StrategyTrading.objects.filter(name =strategy_2 , risk = risk).first()
+    # strategy_tenisball= StrategyTrading.objects.filter(name =strategy_2 , risk = risk).first()
     now = datetime.today()
     date_filter = now.date()
     # Lấy ngày giờ gần nhất trong StockPriceFilter
@@ -151,8 +151,8 @@ def filter_stock_muanual( risk,strategy_1,strategy_2):
     df['date']= pd.to_datetime(df['date']).dt.date
     # chuyển đổi df theo chiến lược
     breakout_buy_today = date_filter_breakout_strategy(df, risk, date_filter, strategy_breakout)
-    tenisball_buy_today = date_filter_tenisball_strategy(df, risk, date_filter, strategy_tenisball)
-    buy_today = breakout_buy_today+tenisball_buy_today
+    # tenisball_buy_today = date_filter_tenisball_strategy(df, risk, date_filter, strategy_tenisball)
+    buy_today = breakout_buy_today  #+tenisball_buy_today
     print('Cổ phiếu là:', buy_today)
     return buy_today
      
