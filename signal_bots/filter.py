@@ -159,11 +159,10 @@ def filter_stock_muanual( risk,strategy_1,strategy_2):
 
 
 def filter_stock_daily(risk=0.03):
-    strategy_1='Breakout ver 0.2'
+    strategy_1='Breakout ver 0.1'
     strategy_2='Tenisball_ver0.1'
     buy_today = filter_stock_muanual(risk,strategy_1,strategy_2)
     date_filter = datetime.today().date() 
-    account = Account.objects.get(name ='Bot_Breakout')
     external_room = ChatGroupTelegram.objects.filter(type = 'external',is_signal =True,rank ='1' )
     num_stock = len(buy_today)
     max_signal = min(num_stock, 5)
@@ -179,34 +178,10 @@ def filter_stock_daily(risk=0.03):
     else:
         for ticker in buy_today[:max_signal]:
             price = StockPriceFilter.objects.filter(ticker = ticker['ticker']).order_by('-date').first().close
-            # risk = account.ratio_risk
-            # nav = account.net_cash_flow +account.total_profit_close
-            # R = risk*nav  
             cut_loss_price = round(price*(100-ticker['ratio_cutloss'])/100,2)
             take_profit_price = round(price*(1+ticker['ratio_cutloss']/100*2),2)
-            # qty= math.floor(R/(price*ticker['ratio_cutloss']*1000))
-            # analysis = FundamentalAnalysis.objects.filter(ticker__ticker=ticker['ticker']).order_by('-modified_date').first()
-            # response = ''
-            # if ticker['strategy'] == strategy_2:
-            #     response +=f"Tín hiệu {ticker['signal']} cp {ticker['ticker']} theo chiến lược {ticker['strategy']} , tỷ lệ cắt lỗ tối ưu là {ticker['ratio_cutloss']}%,  điểm tổng hợp là {ticker['rating']}, điểm cơ bản là {ticker['fundamental']} \n"
-            #     ticker['accumulation']=0
-            # else:
-            #     response +=f"Tín hiệu {ticker['signal']} cp {ticker['ticker']} theo chiến lược {ticker['strategy']}, tỷ lệ cắt lỗ tối ưu là {ticker['ratio_cutloss']}%,  điểm tổng hợp là {ticker['rating']}, điểm cơ bản là {ticker['fundamental']}, số ngày tích lũy trước tăng là {ticker['accumulation']} \n"
-            # if analysis and analysis.modified_date >= (datetime.now() - timedelta(days=6 * 30)):
-            #     response +=f"Thông tin cổ phiếu {ticker['ticker']}:\n"
-            #     response += f"Ngày báo cáo {analysis.date}. P/E: {analysis.ticker.p_e}, P/B: {analysis.ticker.p_b}, Định giá {analysis.valuation}:\n"
-            #     response += f"{analysis.info}.\n"
-            #     response += f"Nguồn {analysis.source}"
             try:
-                # created_transation = Transaction.objects.create(
-                #             account= account,
-                #             stock= ticker['ticker'],
-                #             position='buy',
-                #             price= price,
-                #             qty=qty,
-                #             cut_loss_price =cut_loss_price,
-                #             take_profit_price=take_profit_price,
-                #             description = 'Auto trade' )     
+                
                 created = Signal.objects.create(
                         ticker = ticker['ticker'],
                         close = ticker['close'],
