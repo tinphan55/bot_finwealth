@@ -26,7 +26,7 @@ class SignalAdmin(admin.ModelAdmin):
         return queryset, False
 
     def view_transactions(self, obj):
-        url = reverse('admin:stocklist_overviewbacktest_changelist') + f'?ticker={obj.ticker}'
+        url = reverse('admin:manage_bots_overviewbacktest_changelist') + f'?ticker={obj.ticker}'
         return format_html('<a href="{}">Xem kiểm định</a>', url)
     view_transactions.short_description = 'Xem kiểm định'
 

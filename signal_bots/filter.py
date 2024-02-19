@@ -212,7 +212,7 @@ def filter_stock_daily(risk=0.03):
                         # bot.send_message(
                         # chat_id='-870288807', #room nội bộ
                         # text=f"Không lưu được tín hiệu {ticker['ticker']}, lỗi {e}   ")        
-    detect_divergences(P=20, order=5, K=2)
+    # detect_divergences(P=20, order=5, K=2)
     return 
 
 
