@@ -26,7 +26,7 @@ JAZZMIN_SETTINGS = {
 
     # List of model admins to search from the search bar, search bar omitted if excluded
     # If you want to use a single search field you dont need to use a list, you can use a simple string 
-    "search_model": ["stocklist.Signaldaily", ],
+    "search_model": ["signal_bots.Signal", ],
 
     # Field name on user model that contains avatar ImageField/URLField/Charfield or a callable that receives the user
     "user_avatar": None,
@@ -42,9 +42,7 @@ JAZZMIN_SETTINGS = {
         # Url that gets reversed (Permissions can be added)
         {"name": "Trang chủ",  "url": "admin:index", "permissions": ["auth.view_user"]},
         # external url that opens in a new window (Permissions can be added)
-        {"name": "Tính khối lượng", "url": "http://ecotrading.com.vn/calculator-qty", "new_window": True},
         {"name": "Lọc cổ phiếu", "url":"http://ecotrading.com.vn/get_signal/", "new_window": True},
-        {"name": "Kho", "url":"http://ecotrading.com.vn/warehouse", "new_window": True},
         # model admin to link to (Permissions checked against model)
         {"model": "order.Cart"},
 
@@ -79,7 +77,7 @@ JAZZMIN_SETTINGS = {
     "hide_models": [],
 
     # List of apps (and/or models) to base side menu ordering off of (does not need to contain all apps/models)
-    "order_with_respect_to": [ "Stockwarehouse","Stocklist",],
+    "order_with_respect_to": [ "Signal_bots","manage_bots",],
 
     # Custom links to append to app groups, keyed on app name
     # "custom_links": {
