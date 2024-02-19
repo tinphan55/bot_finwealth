@@ -15,6 +15,7 @@ from data_source.models import *
 from data_source.function import *
 import numpy as np
 from .models import *
+import talib
 
 risk =0.03
 
