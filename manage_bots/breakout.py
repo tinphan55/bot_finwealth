@@ -10,13 +10,124 @@ import backtrader.feeds as btfeed
 import pandas as pd
 import matplotlib.pyplot as plt
 import backtrader.analyzers as btanalyzers
-from manage_bots.logic import *
 from django.shortcuts import render
-from backtrader.observer import Observer
 from statistics import mean
-from django.http import JsonResponse
+from data_source.models import *
+from data_source.function import *
+import numpy as np
+from .models import *
+
+risk =0.03
+
+def add_test_value(group):
+    group['tsi'] = np.where(
+        (group['close'] > group['res'].shift(-1)),
+        group['sup'],
+        np.where(
+            (group['close'] < group['sup'].shift(-1)),
+            group['res'],
+            np.nan
+        ))
+    return group
+
+def calculate_sma(group):
+    return group['close'].rolling(window=group['param_sma']).mean()
+
+def accumulation_model(ticker, period=5):
+    stock_prices = StockPriceFilter.objects.filter(ticker =ticker).values()
+    df = pd.DataFrame(stock_prices) 
+    df = df.sort_values(by='date', ascending=True).reset_index(drop=True)
+    # Tính toán đường trung bình động với số điểm dữ liệu window
+    df['sma'] = talib.EMA(df['close'], timeperiod=period)
+    #Tính toán độ dốc của đường trung bình động
+    df['gradients'] = np.gradient(df['sma'])
+    df = df.sort_values(by='date', ascending=False).reset_index(drop=True)
+    gradients = df['gradients'].to_numpy()
+    # Xác định mô hình tích lũy
+    len_sideway =[]
+    for item in gradients[1:]:
+        sideway=True
+        if item >0.1 or item <-0.1:
+            sideway= False
+            break
+        else:
+            len_sideway.append(item)
+    return len(len_sideway)
 
 
+def accumulation_model_df(df):
+    df = df.sort_values(by=['ticker', 'date'], ascending=True).reset_index(drop=True)
+    df['ema'] = df.groupby('ticker')['close'].transform(lambda x: talib.EMA(x, timeperiod=5))
+    ema_counts = df.groupby("ticker")["ema"].count()
+    tickers_with_4_ema_rows = ema_counts[ema_counts <= 4].index.tolist()
+    df= df[~df['ticker'].isin(tickers_with_4_ema_rows)]
+    df['gradients'] = df.groupby('ticker')['ema'].transform(lambda x: np.gradient(x))
+    df['len_sideway'] = 0
+    threshold = 0.1
+    current_ticker = None
+    current_count = 0
+    for index, row in df.iterrows():
+        if current_ticker != row['ticker']:
+            current_ticker = row['ticker']
+            current_count = 0  
+            limit_count = 0
+        if abs(row['gradients']) > threshold:
+            limit_count += 1
+        else:            
+            current_count += 1
+        if limit_count > 2:
+            current_count = 0
+            limit_count = 0
+        df.at[index, 'len_sideway'] = current_count
+    return df
+
+
+def breakout_strategy_otmed(df, risk):
+    strategy= StrategyTrading.objects.filter(name = 'Breakout ver 0.2', risk = risk).first()
+    period = strategy.period
+    num_raw =period + 5
+    backtest = ParamsOptimize.objects.filter(strategy = strategy).values('ticker','param1','param2','param3','param4','param5','param6')
+    df_param = pd.DataFrame(backtest)
+    df['mean_vol'] = df.groupby('ticker')['volume'].transform('mean')
+    df =df.loc[df['mean_vol']>50000].reset_index(drop=True)
+    df = df.drop(['id', 'mean_vol'], axis=1)
+    df['param_sma'] = df['ticker'].map(df_param.set_index('ticker')['param5'])
+    df = df.drop(df[(df['open'] == 0) & (df['close'] == 0) & (df['volume'] == 0) | pd.isna(df['param_sma'])].index)
+    df = accumulation_model_df(df)
+    df = df.groupby('ticker', group_keys=False).apply(lambda x: x.sort_values('date', ascending=False).head(num_raw) if num_raw is not None else x.sort_values('date', ascending=False))
+    df =df.reset_index(drop =True)
+    df['param_multiply_volumn'] = df['ticker'].map(df_param.set_index('ticker')['param1'])
+    df['param_change_day'] = df['ticker'].map(df_param.set_index('ticker')['param3'])
+    df['param_rate_of_increase'] = df['ticker'].map(df_param.set_index('ticker')['param2'])
+    df['param_ratio_cutloss'] = df['ticker'].map(df_param.set_index('ticker')['param4'])
+    df['param_len_sideway'] = df['ticker'].map(df_param.set_index('ticker')['param6'])
+    df['res'] = df.groupby('ticker')['high'].transform(lambda x: x[::-1].rolling(window=period).max()[::-1])
+    df['sup'] = df.groupby('ticker')['low'].transform(lambda x: x[::-1].rolling(window=period).min()[::-1])
+    df['mavol'] = df.groupby('ticker')['volume'].transform(lambda x: x[::-1].rolling(window=period).mean()[::-1])
+    df['pre_close'] = df.groupby('ticker')['close'].shift(-1)
+    df['sma'] = df.groupby('ticker').apply(
+        lambda x: x['close'][::-1].rolling(window=x['param_sma'].astype(int).values[0]).mean()[::-1]).reset_index(drop=True)
+    df = df.groupby('ticker', group_keys=False).apply(add_test_value)
+    df['tsi'].fillna(method='ffill', inplace=True)
+    buy = (df['close'] > 5) & (df['close'] > df['sma']) & (df['close'] > df['tsi']) & (df['volume'] > df['mavol']*df['param_multiply_volumn']) &  (df['mavol'] > 100000) & (df['high']/df['close']-1 < df['param_rate_of_increase']) & (df['close']/df['pre_close']-1 > df['param_change_day']) &(df['len_sideway']> df['param_len_sideway'])
+    # cut_loss = df['close'] <= df['close']*(1-df['param_ratio_cutloss'])
+    df['signal'] = np.where(buy, 'buy', 'newtral')
+    return df
+
+
+def breakout_strategy(df, period, num_raw=None):
+    df = df.drop(df[(df['open'] == 0) & (df['close'] == 0)& (df['volume'] == 0)].index)
+    df = accumulation_model_df(df)
+    df = df.groupby('ticker', group_keys=False).apply(lambda x: x.sort_values('date', ascending=False).head(num_raw) if num_raw is not None else x.sort_values('date', ascending=False))
+    df['res'] = df.groupby('ticker')['high'].transform(lambda x: x[::-1].rolling(window=period).max()[::-1])
+    df['sup'] = df.groupby('ticker')['low'].transform(lambda x: x[::-1].rolling(window=period).min()[::-1])
+    df['mavol'] = df.groupby('ticker')['volume'].transform(lambda x: x[::-1].rolling(window=period).mean()[::-1])
+    df['sma'] = df.groupby('ticker')['close'].transform(lambda x: x[::-1].rolling(window=period).mean()[::-1])
+    df = df.groupby('ticker', group_keys=False).apply(add_test_value)
+    df['tsi'].fillna(method='ffill', inplace=True)
+    df['pre_close'] = df.groupby('ticker')['close'].shift(-1)
+    df['len_sideway'] = df.groupby('ticker')['len_sideway'].shift(-1)
+    return df
 
 
 def custom_date_parser(date_string):
@@ -24,16 +135,7 @@ def custom_date_parser(date_string):
 
 
 # Can chinh lai xac dinh ngay khong giao dich
-def define_stock_date_to_sell(buy_date, days=2):
-    next_trading_date = None
-    # Tính ngày kết thúc
-    end_date = buy_date + timedelta(days=days)
-    # Lấy tất cả các ngày giao dịch từ buy_date đến end_date và sắp xếp theo thứ tự tăng dần
-    trading_dates = DateTrading.objects.filter(date__gt=buy_date, date__lte=end_date).order_by('date')
-    # Kiểm tra nếu có ngày giao dịch tiếp theo
-    if trading_dates.exists():
-        next_trading_date = trading_dates.first().date
-    return next_trading_date
+
 
 
 dict_params = {

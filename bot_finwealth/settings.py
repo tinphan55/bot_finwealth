@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'telegram_bot',
     'data_source',
     'manage_bots',
+    'signal_bots',
 ]
 
 MIDDLEWARE = [

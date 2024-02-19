@@ -5,7 +5,52 @@ import json
 from data_source.models import *
 from data_source.posgress import *
 
+def define_stock_date_to_sell(buy_date, days=2):
+    next_trading_date = None
+    # Tính ngày kết thúc
+    end_date = buy_date + timedelta(days=days)
+    # Lấy tất cả các ngày giao dịch từ buy_date đến end_date và sắp xếp theo thứ tự tăng dần
+    trading_dates = DateTrading.objects.filter(date__gt=buy_date, date__lte=end_date).order_by('date')
+    # Kiểm tra nếu có ngày giao dịch tiếp theo
+    if trading_dates.exists():
+        next_trading_date = trading_dates.first().date
+    return next_trading_date
 
+def save_fa_valuation():
+    fa = StockFundamentalData.objects.all()
+    for self in fa:
+        stock = StockPriceFilter.objects.filter(ticker = self.ticker).order_by('-date_time').first()
+        if stock:
+            self.market_price = stock.close
+        if self.bvps and self.market_price :
+            self.p_b = round(self.market_price*1000/self.bvps,2)
+            #dept từ 0-1: 80-100 điểm, 1-5: 50-80 điểm, 5-10: 20 - 50, trên 10: 20
+            if self.p_b > 0 and self.p_b <=1 :
+                rating_pb = 100 - (self.p_b-0) /(1-0)*(100-80)
+            elif self.p_b >1 and self.p_b<=10:
+                rating_pb = 80 - (self.p_b-1) /(10-1)*(80-50)
+            elif self.p_b >10:
+                rating_pb = 40
+            else:
+                rating_pb = 0
+        else:
+            rating_pb = 0
+        if self.eps and self.market_price:
+            self.p_e = round(self.market_price*1000/self.eps,2)
+            #dept từ 0-1: 80-100 điểm, 1-5: 50-80 điểm, 5-10: 20 - 50, trên 10: 20
+            if self.p_e > 0 and self.p_e <=1 :
+                rating_pe = 100 - (self.p_e-0) /(1-0)*(100-80)
+            elif self.p_e >1 and self.p_e<=10:
+                rating_pe = 80 - (self.p_e-1) /(10-1)*(80-50)
+            elif self.p_e >10:
+                rating_pe = 40
+            else:
+                rating_pe = 0
+        else:
+            rating_pe = 0
+        self.valuation_rating  = round(rating_pb*0.5+rating_pe*0.5,2)
+        self.fundamental_rating = round(self.growth_rating*0.5 + self.valuation_rating*0.3 + self.stable_rating*0.2,2)
+        self.save()
 
 def get_all_info_stock_price():
     boardname = ['HOSE','HNX','UPCOM']
@@ -233,3 +278,90 @@ def metakit_stock_price_import():
     execute_query(add_id_column_query)
 
     print('Tai data chứng khoán xong')
+
+
+def save_event_stock(stock):
+    list_event =[]
+    linkbase= 'https://www.stockbiz.vn/MarketCalendar.aspx?Symbol='+ stock
+    r = requests.get(linkbase)
+    soup = BeautifulSoup(r.text,'html.parser')
+    table = soup.find('table', class_='dataTable')  # Tìm bảng chứa thông tin
+    if table:
+        rows = table.find_all('tr')  # Lấy tất cả các dòng trong bảng (loại bỏ dòng tiêu đề)
+        cash_value= 0
+        stock_value=0
+        stock_option_value=0
+        price_option_value=0
+        dividend_type = 'order'
+        for row in rows[1:]:  # Bắt đầu từ vị trí thứ hai (loại bỏ dòng tiêu đề)
+            dividend  = {}
+            columns = row.find_all('td')  # Lấy tất cả các cột trong dòng
+            if len(columns) >= 3:  # Kiểm tra số lượng cột
+                dividend['ex_rights_date'] = columns[0].get_text(strip=True)
+                dividend['event'] = columns[4].get_text(strip=True)
+                list_event.append(dividend)
+                event = dividend['event'].lower()
+                ex_rights_date = datetime.strptime(dividend['ex_rights_date'], '%d/%m/%Y').date()
+                if ex_rights_date == datetime.now().date():
+                    if 'tiền' in event:
+                        dividend_type = 'cash'
+                        cash = re.findall(r'\d+', event)  # Tìm tất cả các giá trị số trong chuỗi
+                        if cash:
+                            value1 = int(cash[-1])/1000  # Lấy giá trị số đầu tiên
+                            cash_value += value1
+                    elif 'cổ phiếu' in event and 'phát hành' not in event:
+                        dividend_type = 'stock'
+                        stock_values = re.findall(r'\d+', event)
+                        if stock_values:
+                            value2 = int(stock_values[-1])/int(stock_values[-2])
+                            stock_value += value2
+                    elif 'cổ phiếu' in event and 'giá' in event and 'tỷ lệ' in event:
+                        dividend_type = 'option'
+                        option = re.findall(r'\d+', event)
+                        if option:
+                                stock_option_value = int(option[-2])/int(option[-3])
+                                price_option_value = int(option[-1])
+        if dividend_type == 'order':
+            pass
+        else:
+            DividendManage.objects.update_or_create(
+                        ticker= stock,  # Thay thế 'Your_Ticker_Value' bằng giá trị ticker thực tế
+                        date_apply=ex_rights_date,
+                        defaults={
+                            'type': dividend_type,
+                            'cash': cash_value,
+                            'stock': stock_value,
+                            'price_option': price_option_value,
+                            'stock_option':stock_option_value
+                        }
+                    )
+    return list_event
+
+def check_dividend():
+    signal = Signaldaily.objects.filter(is_closed = False)
+    for stock in signal:
+        dividend = save_event_stock(stock.ticker)
+    dividend_today = DividendManage.objects.filter(date_apply =datetime.now().date() )
+    for i in dividend_today:
+        i.save()
+        
+    
+def check_update_analysis_and_send_notifications():
+    # Lọc các bản ghi có modified_date max trong cùng ticker
+    filtered_records = []
+    # Lấy danh sách các ticker và modified_date max
+    latest_records = FundamentalAnalysis.objects.values('ticker').annotate(max_modified_date=Max('modified_date'))
+    for record in latest_records:
+        ticker = record['ticker']
+        max_modified_date = record['max_modified_date']
+        ticker_records = FundamentalAnalysis.objects.filter(ticker=ticker, modified_date=max_modified_date)
+        filtered_records.extend(ticker_records)
+    # Lọc các record có modified_date max có ngày nhỏ hơn ngày hiện tại - 90 ngày
+    current_date = datetime.now()
+    threshold_date = current_date - timedelta(days=90)
+    records_to_notify = [record for record in filtered_records if record.modified_date <= threshold_date]
+    for record in records_to_notify:
+        bot = Bot(token='5881451311:AAEJYKo0ttHU0_Ztv3oGuf-rfFrGgajjtEk')
+        bot.send_message(
+                chat_id='-870288807', 
+                text=f"Cổ phiếu {record.ticker} đã quá 3 tháng chưa có cập nhật thông tin mới, hãy cập nhật ngay nhé Vũ/Thạch ơi!!!" )   
