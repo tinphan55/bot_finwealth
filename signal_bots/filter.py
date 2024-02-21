@@ -138,7 +138,7 @@ def filter_stock_muanual( risk,strategy_1):
     close_section = datetime(now.year, now.month, now.day, 15, 0, 0)  # Tạo thời điểm 15:00:00 cùng ngày
     open_section = datetime(now.year, now.month, now.day, 9, 0, 0)  # Tạo thời điểm 15:00:00 cùng ngày
     # Kiểm tra điều kiện để thực hiện hàm get_info_stock_price_filter()
-    if 0 <= now.weekday() <= 4 and open_section <= now <= close_section and time_difference > 900:
+    if 0 <= now.weekday() <= 4 and open_section <= now  and time_difference > 900:
         get_info_stock_price_filter()
         print('tải data xong')
         save_fa_valuation()
