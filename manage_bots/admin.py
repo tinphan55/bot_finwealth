@@ -24,12 +24,12 @@ class OverviewBacktestAdmin(admin.ModelAdmin):
 
     
     def view_transactions(self, obj):
-        url = reverse('admin:stocklist_transactionbacktest_changelist') + f'?ticker={obj.ticker}'
+        url = reverse('admin:manage_bots_transactionbacktest_changelist') + f'?ticker={obj.ticker}'
         return format_html('<a href="{}">Xem giao dịch</a>', url)
     view_transactions.short_description = 'Xem giao dịch'
    
     
-   
+
     
 class TransactionBacktestAdmin(admin.ModelAdmin):
     model = TransactionBacktest

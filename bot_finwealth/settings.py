@@ -31,6 +31,7 @@ SECRET_KEY = 'django-insecure-tr7*9sss-=8lug67x*9pktqewkwp+9(+p9*&de)zc-zczcvg3e
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+CSRF_TRUSTED_ORIGINS = ['https://finwealth.vn']
 
 ALLOWED_HOSTS = ['*']
 
