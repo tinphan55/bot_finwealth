@@ -723,12 +723,12 @@ def run_backtest_again(risk, begin_list, end_list):
             data = PandasData(dataname=df)
             #Chạy tối ưu hóa param
             # Khởi tạo các giá trị tham số muốn tối ưu
-            multiply_volumn_values = [x / 2 for x in range(2, 4)]
+            multiply_volumn_values = [x / 2 for x in range(3, 4)]
             rate_of_increase_values = [0.01, 0.03]
-            change_day_values = [0.015,0.025,0.03]
+            change_day_values = [0.015,0.025]
             risk_values = [risk]   
             ratio_cutloss = [0.07,0.1]
-            sma = [20,50] 
+            sma = [20] 
             len_sideway = [3]
             #####test
             # multiply_volumn_values = [x / 2 for x in range(2, 3)]
