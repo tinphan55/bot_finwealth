@@ -130,12 +130,12 @@ class FundamentalAnalysisReport(models.Model):
         verbose_name = 'Báo cáo phân tích'
         verbose_name_plural = 'Báo cáo phân tích'
     
-    # def save(self, *args, **kwargs):
-    #     if self.file:
-    #         self.content = pdf_text_extract(self.file.path, self.source)
-    #         # Xóa trường self.file
+    def save(self, *args, **kwargs):
+        if self.file:
+            self.content = pdf_text_extract(self.file.path, self.source)
+            # Xóa trường self.file
 
-    #     super(FundamentalAnalysisReport, self).save(*args, **kwargs)
+        super(FundamentalAnalysisReport, self).save(*args, **kwargs)
     
 
    
