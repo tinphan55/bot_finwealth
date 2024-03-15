@@ -6,7 +6,7 @@ from .models import *
 class FundamentalAnalysisReportSegmentAdmin(admin.TabularInline):
     model = FundamentalAnalysisReportSegment
     fields = ('segment',)
-    readonly_fields = ['segment',]
+    
 class FundamentalAnalysisReportAdmin(admin.ModelAdmin):
     model = FundamentalAnalysisReport
     inlines = [FundamentalAnalysisReportSegmentAdmin]
