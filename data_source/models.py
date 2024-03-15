@@ -1,6 +1,35 @@
 from django.db import models
 from datetime import datetime, timedelta, time
+from django.core.validators import FileExtensionValidator
+from django.db.models.signals import post_save, post_delete,pre_save
+from django.dispatch import receiver
+import fitz  # PyMuPDF
+from docx import Document
+
 # Create your models here.
+
+def pdf_text_extract(pdf_path,source):
+    doc = fitz.open(pdf_path)
+
+    num_pages = len(doc)  # Số lượng trang trong tệp PDF
+    extracted_text = []  # Danh sách văn bản đã rút trích từ PDF
+
+    for i, page in enumerate(doc):
+        if i == num_pages - 1:
+            break  # Kết thúc vòng lặp nếu đó là trang cuối
+
+        # Rút trích văn bản từ trang
+        text_blocks = page.get_text('blocks')
+        for block in text_blocks:
+            for lines in block:
+                lines = str(lines)
+                if len(lines) > 100:
+                    lines = lines.replace("Chúng tôi", source)
+                    lines = lines.replace("chúng tôi", source)
+                    extracted_text.append(lines)
+
+    return extracted_text
+
 
 class DateTrading(models.Model):
     date = models.DateField(unique=False)
@@ -54,11 +83,18 @@ class SectorPrice(models.Model):
         return str(self.ticker) +str("_")+ str(self.date)
 
 
+class StockOverview(models.Model):
+    ticker = models.CharField(max_length=15,  verbose_name = 'Cổ phiếu' ) 
+    company_name  = models.CharField(max_length=200,verbose_name='Tên công ty') 
+    stock_exchange = models.CharField(max_length=200,verbose_name='Sàn niêm yết')
+    listed_date= models.DateField(max_length=200,verbose_name='Ngày niêm yết')
+    introduce = models.CharField(max_length=200,verbose_name='Giới thiệu')
+    
+
+  
 
 class StockFundamentalData(models.Model):
-    ticker = models.CharField(max_length=15,  verbose_name = 'Cổ phiếu' ) 
-    name  = models.CharField(max_length=200,verbose_name='Tên công ty') 
-    stock_exchange = models.CharField(max_length=200,verbose_name='Sàn niêm yến')
+    ticker = models.ForeignKey(StockOverview,on_delete=models.CASCADE,verbose_name = 'Cổ phiếu' )
     eps = models.FloatField(null=True, verbose_name = 'EPS')
     roa = models.FloatField(null=True, verbose_name = 'ROA')
     roe = models.FloatField(null=True, verbose_name = 'ROE')
@@ -79,19 +115,35 @@ class StockFundamentalData(models.Model):
     def __str__(self):
         return self.ticker
     
-class FundamentalAnalysis(models.Model):
-    ticker = models.ForeignKey(StockFundamentalData,on_delete=models.CASCADE, null=True, blank=True,verbose_name = 'Cổ phiếu' )
-    source = models.CharField(max_length=100,null=True, blank=True,verbose_name = 'Nguồn')
-    modified_date = models.DateTimeField(auto_now=True ,verbose_name = 'Ngày tạo')
-    info = models.TextField(max_length=2000, verbose_name = 'Nội dung')
-    valuation = models.FloatField(null=True, blank=True, verbose_name = 'Định giá')
-    date = models.DateField(null=True, blank=True, verbose_name = 'Ngày báo cáo')
-    
+
+
+class FundamentalAnalysisReport(models.Model):
+    source = models.CharField(max_length=100, blank=True, verbose_name='Nguồn')
+    modified_date = models.DateTimeField(auto_now=True ,verbose_name='Ngày tạo')
+    content = models.TextField(verbose_name='Nội dung',null=True, blank=True)
+    valuation = models.FloatField(null=True, blank=True, verbose_name='Định giá')
+    date = models.DateField(verbose_name='Ngày báo cáo')
+    tags = models.ManyToManyField('Tag')
+    file = models.FileField(upload_to='reports/', validators=[FileExtensionValidator(['pdf', 'docx'])], verbose_name='Tệp đính kèm')
+
     class Meta:
         verbose_name = 'Báo cáo phân tích'
         verbose_name_plural = 'Báo cáo phân tích'
+    
+    def save(self, *args, **kwargs):
+        if self.file:
+            self.content = pdf_text_extract(self.file.path, self.source)
+            # Xóa trường self.file
+
+        super(FundamentalAnalysisReport, self).save(*args, **kwargs)
+    
 
    
+
+class Tag (models.Model):
+    name = models.CharField(max_length=50)
+    def __str__(self):
+        return f"{self.name}"
 
 def save_fa():
     fa = StockFundamentalData.objects.all()
@@ -138,4 +190,8 @@ def save_fa():
     
         
     
+
+
+
+   
 
