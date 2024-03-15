@@ -365,3 +365,128 @@ def check_update_analysis_and_send_notifications():
         bot.send_message(
                 chat_id='-870288807', 
                 text=f"Cổ phiếu {record.ticker} đã quá 3 tháng chưa có cập nhật thông tin mới, hãy cập nhật ngay nhé Vũ/Thạch ơi!!!" )   
+
+
+def save_valuation_stock_company(stock,days=360):
+    url1 = "https://finfo-api.vndirect.com.vn/v4/recommendations?q=code:"
+    url2 = "~reportDate:gte:"
+    date = (datetime.now()-timedelta(days = days)).strftime("%Y-%m-%d")
+    url3 = "&size=100&sort=reportDate:DESC"
+    url = url1+stock+url2+date+url3
+    payload = {}
+    headers = {
+    'Accept': 'application/json, text/javascript, */*; q=0.01',
+    'Accept-Language': 'vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive',
+    'Content-Type': 'application/json',
+    'Origin': 'https://www.vndirect.com.vn',
+    'Pragma': 'no-cache',
+    'Referer': 'https://www.vndirect.com.vn/',
+    'Sec-Fetch-Dest': 'empty',
+    'Sec-Fetch-Mode': 'cors',
+    'Sec-Fetch-Site': 'same-site',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'sec-ch-ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+    'sec-ch-ua-mobile': '?0',
+    'sec-ch-ua-platform': '"Windows"'
+    }
+    response = requests.request("GET", url, headers=headers, data=payload)
+    data = response.text
+    data_dict = json.loads(data)
+    data_list = data_dict['data']
+    # In ra dữ liệu trong list 'data'
+    for item in data_list:
+        stock = StockFundamentalData.objects.filter(ticker = item['code']).first().ticker
+        date = item['reportDate']  # Giả sử bạn có thể trích xuất giá trị date từ item
+        source = item['firm']  # Giả sử bạn có thể trích xuất giá trị source từ item
+        recommendation = item['type']
+        if not FundamentalAnalysis.objects.filter(ticker=stock, date=date, source=source).exists():
+        # Nếu bản ghi không tồn tại, tạo mới
+            FundamentalAnalysis.objects.create(
+                ticker=stock,
+                date=date,
+                source=source,
+                target_price=item['target_price'],  # Giả sử bạn có thể trích xuất giá trị target_price từ item
+                recommendation = recommendation,
+            )
+        
+    
+def save_fa_raw():
+#FREEFLOAT,BETA,PRICE_TO_EARNINGS,PRICE_TO_BOOK,DIVIDEND_YIELD,BVPS_CR
+
+url = "https://finfo-api.vndirect.com.vn/v4/ratios/latest?filter=ratioCode:FREEFLOAT,BETA,PRICE_TO_EARNINGS,PRICE_TO_BOOK,DIVIDEND_YIELD,BVPS_CR,&where=code:VNM~reportDate:gt:2024-01-09&order=reportDate&fields=ratioCode,value"
+
+payload = {}
+headers = {
+  'Accept': 'application/json, text/javascript, */*; q=0.01',
+  'Accept-Language': 'vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7',
+  'Cache-Control': 'no-cache',
+  'Connection': 'keep-alive',
+  'Content-Type': 'application/json',
+  'Origin': 'https://www.vndirect.com.vn',
+  'Pragma': 'no-cache',
+  'Referer': 'https://www.vndirect.com.vn/',
+  'Sec-Fetch-Dest': 'empty',
+  'Sec-Fetch-Mode': 'cors',
+  'Sec-Fetch-Site': 'same-site',
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+  'sec-ch-ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+  'sec-ch-ua-mobile': '?0',
+  'sec-ch-ua-platform': '"Windows"'
+}
+
+response = requests.request("GET", url, headers=headers, data=payload)
+#ROAE_TR_AVG5Q,ROAA_TR_AVG5Q,EPS_TR,
+url = "https://finfo-api.vndirect.com.vn/v4/ratios/latest?filter=ratioCode:ROAE_TR_AVG5Q,ROAA_TR_AVG5Q,EPS_TR,&where=code:VNM~reportDate:gt:2023-10-11&order=reportDate&fields=ratioCode,value"
+
+payload = {}
+headers = {
+  'Accept': 'application/json, text/javascript, */*; q=0.01',
+  'Accept-Language': 'vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7',
+  'Cache-Control': 'no-cache',
+  'Connection': 'keep-alive',
+  'Content-Type': 'application/json',
+  'Origin': 'https://www.vndirect.com.vn',
+  'Pragma': 'no-cache',
+  'Referer': 'https://www.vndirect.com.vn/',
+  'Sec-Fetch-Dest': 'empty',
+  'Sec-Fetch-Mode': 'cors',
+  'Sec-Fetch-Site': 'same-site',
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+  'sec-ch-ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+  'sec-ch-ua-mobile': '?0',
+  'sec-ch-ua-platform': '"Windows"'
+}
+
+response = requests.request("GET", url, headers=headers, data=payload)
+
+print(response.text)
+print(response.text)
+
+
+def dinhluongfa()
+    url = "https://finfo-api.vndirect.com.vn/v4/scorings/latest?order=fiscalDate&where=code:VNM~locale:VN~fiscalDate:lte:2024-01-21&filter=criteriaCode:102000,103000,101000,105000,104000,106000,100000,202000,203000,201000,205000,204000,206000,200000,102000,303000,301000,305000,104000,106000,300000,102000,503000,501000,505000,104000,106000,500000"
+
+    payload = {}
+    headers = {
+    'Accept': 'application/json, text/javascript, */*; q=0.01',
+    'Accept-Language': 'vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive',
+    'Content-Type': 'application/json',
+    'Origin': 'https://www.vndirect.com.vn',
+    'Pragma': 'no-cache',
+    'Referer': 'https://www.vndirect.com.vn/',
+    'Sec-Fetch-Dest': 'empty',
+    'Sec-Fetch-Mode': 'cors',
+    'Sec-Fetch-Site': 'same-site',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'sec-ch-ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+    'sec-ch-ua-mobile': '?0',
+    'sec-ch-ua-platform': '"Windows"'
+    }
+
+    response = requests.request("GET", url, headers=headers, data=payload)
+
+    print(response.text)
