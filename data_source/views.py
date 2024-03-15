@@ -11,3 +11,11 @@ class FundamentalAnalysisReportSegmentAPIView(generics.RetrieveAPIView):
 class FundamentalAnalysisReportSegmentListAPIView(generics.ListAPIView):
     queryset = FundamentalAnalysisReportSegment.objects.all()
     serializer_class = FundamentalAnalysisReportSegmentSerializer
+
+class FundamentalAnalysisReportSegmentSearchAPIView(generics.ListAPIView):
+    serializer_class = FundamentalAnalysisReportSegmentSerializer
+
+    def get_queryset(self):
+        tag = self.request.query_params.get('tag', '')
+        queryset = FundamentalAnalysisReportSegment.objects.filter(report__tags__name=tag)
+        return queryset
