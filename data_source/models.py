@@ -5,9 +5,16 @@ from django.db.models.signals import post_save, post_delete,pre_save
 from django.dispatch import receiver
 import fitz  # PyMuPDF
 import os
+from django.core.exceptions import ValidationError
+import re
 
 
 # Create your models here.
+def clean_text(text):
+    # Loại bỏ các dấu xuống dòng và dấu cách dư thừa trong văn bản
+    cleaned_text = re.sub(r'[\r\n]+', ' ', text)  # Loại bỏ dấu xuống dòng
+    cleaned_text = re.sub(r'\s{2,}', ' ', cleaned_text)  # Loại bỏ dấu cách dư thừa
+    return cleaned_text
 
 def pdf_text_extract(pdf_path, source):
     doc = fitz.open(pdf_path)
@@ -31,10 +38,8 @@ def pdf_text_extract(pdf_path, source):
                     lines = lines.replace("Chúng tôi", source)
                     lines = lines.replace("chúng tôi", source)
                     current_extracted_text += lines
-
-                    # Kiểm tra độ dài của current_extracted_text
-                    if len(current_extracted_text) > 1024:
-                        # Tách thành hai phần nhỏ
+                    current_extracted_text =clean_text(current_extracted_text) 
+                    while len(current_extracted_text) > 1024:
                         last_period_index = current_extracted_text.rfind(". ", 0, 1024)
                         if last_period_index != -1:
                             extracted_text = current_extracted_text[:last_period_index + 1]
@@ -42,15 +47,16 @@ def pdf_text_extract(pdf_path, source):
                         else:
                             extracted_text = current_extracted_text[:1020]
                             remaining_text = current_extracted_text[1020:]
+
                         # Thêm extracted_text vào danh sách extracted_texts
                         extracted_texts.append(extracted_text)
                         # Gán remaining_text cho current_extracted_text để kiểm tra tiếp
                         current_extracted_text = remaining_text
+        
 
-        if current_extracted_text:
-            # Thêm extracted_text cuối cùng vào danh sách extracted_texts nếu còn dư
-            extracted_texts.append(current_extracted_text)
-
+    if current_extracted_text:
+        # Thêm extracted_text cuối cùng vào danh sách extracted_texts nếu còn dư
+        extracted_texts.append(current_extracted_text)
     return extracted_texts
 
 
@@ -156,15 +162,22 @@ class FundamentalAnalysisReport(models.Model):
     def __str__(self):
         return str(self.name) 
     
+    # def clean(self):
+    #     # Method này sẽ được gọi khi bạn gọi phương thức full_clean, hoặc khi form gọi phương thức clean
+    #     # Thực hiện kiểm tra trùng lặp
+    #     if self._state.adding:
+    #         print('có')
+    #         if FundamentalAnalysisReport.objects.filter(date=self.date, source=self.source, name=self.name).exists():
+    #             raise ValidationError("Đã có báo cáo tương tự được tải lên")
+    
 
 
     
+        
     def save(self, *args, **kwargs):
-        # Lưu giá trị name từ file.upload.name
         if self.file:
             self.name = os.path.basename(self.file.name)
-
-        super().save(*args, **kwargs)
+        return super(FundamentalAnalysisReport, self).save(*args, **kwargs)
     
 class FundamentalAnalysisReportSegment(models.Model):
     report = models.ForeignKey(FundamentalAnalysisReport,on_delete=models.CASCADE,verbose_name = 'Báo cáo' )
@@ -172,6 +185,8 @@ class FundamentalAnalysisReportSegment(models.Model):
     class Meta:
         verbose_name = 'Nội dung báo cáo'
         verbose_name_plural = 'Nội dung báo cáo'
+  
+    
 
 
 @receiver(post_save, sender=FundamentalAnalysisReport)
