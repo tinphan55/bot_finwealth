@@ -34,17 +34,15 @@ def pdf_text_extract(pdf_path, source):
                     # Kiểm tra độ dài của current_extracted_text
                     while len(current_extracted_text) > 1024:
                         # Tách thành hai phần nhỏ
-                        last_period_index = lines.rfind(".", 0, 1024)
+                        last_period_index = lines.rfind(". ", 0, 1024)
                         if last_period_index != -1:
                             extracted_text = lines[:last_period_index + 1]
                             remaining_text = lines[last_period_index + 1:]
                         else:
                             extracted_text = current_extracted_text[:1020]
                             remaining_text = current_extracted_text[1020:]
-
                         # Thêm extracted_text vào danh sách extracted_texts
                         extracted_texts.append(extracted_text)
-
                         # Gán remaining_text cho current_extracted_text để kiểm tra tiếp
                         current_extracted_text = remaining_text
 
