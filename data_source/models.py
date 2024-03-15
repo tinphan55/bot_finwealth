@@ -4,15 +4,18 @@ from django.core.validators import FileExtensionValidator
 from django.db.models.signals import post_save, post_delete,pre_save
 from django.dispatch import receiver
 import fitz  # PyMuPDF
-from docx import Document
+import os
+
 
 # Create your models here.
 
-def pdf_text_extract(pdf_path,source):
+def pdf_text_extract(pdf_path, source):
     doc = fitz.open(pdf_path)
 
     num_pages = len(doc)  # Số lượng trang trong tệp PDF
-    extracted_text = []  # Danh sách văn bản đã rút trích từ PDF
+    extracted_texts = []  # Danh sách các extracted_text
+
+    current_extracted_text = ""  # Biến lưu trữ extracted_text hiện tại
 
     for i, page in enumerate(doc):
         if i == num_pages - 1:
@@ -26,9 +29,20 @@ def pdf_text_extract(pdf_path,source):
                 if len(lines) > 100:
                     lines = lines.replace("Chúng tôi", source)
                     lines = lines.replace("chúng tôi", source)
-                    extracted_text.append(lines)
+                    
+                    if len(current_extracted_text) + len(lines) < 1024:
+                        # Thêm lines vào current_extracted_text nếu không vượt quá giới hạn 1024 ký tự
+                        current_extracted_text += lines
+                    else:
+                        # Nếu vượt quá giới hạn 1024 ký tự, đẩy current_extracted_text vào danh sách extracted_texts
+                        extracted_texts.append(current_extracted_text)
+                        current_extracted_text = lines  # Bắt đầu extracted_text mới
 
-    return extracted_text
+    if current_extracted_text:
+        # Đẩy extracted_text cuối cùng vào danh sách extracted_texts nếu còn dư
+        extracted_texts.append(current_extracted_text)
+
+    return extracted_texts
 
 
 class DateTrading(models.Model):
@@ -118,9 +132,9 @@ class StockFundamentalData(models.Model):
 
 
 class FundamentalAnalysisReport(models.Model):
+    name = models.CharField(max_length=100, blank=True,null=True, verbose_name='Tên báo cáo')
     source = models.CharField(max_length=100, blank=True, verbose_name='Nguồn')
     modified_date = models.DateTimeField(auto_now=True ,verbose_name='Ngày tạo')
-    content = models.TextField(verbose_name='Nội dung',null=True, blank=True)
     valuation = models.FloatField(null=True, blank=True, verbose_name='Định giá')
     date = models.DateField(verbose_name='Ngày báo cáo')
     tags = models.ManyToManyField('Tag')
@@ -129,17 +143,38 @@ class FundamentalAnalysisReport(models.Model):
     class Meta:
         verbose_name = 'Báo cáo phân tích'
         verbose_name_plural = 'Báo cáo phân tích'
+    def __str__(self):
+        return str(self.name) 
+    
+
+
     
     def save(self, *args, **kwargs):
+        # Lưu giá trị name từ file.upload.name
         if self.file:
-            self.content = pdf_text_extract(self.file.path, self.source)
-            # Xóa trường self.file
+            self.name = os.path.basename(self.file.name)
 
-        super(FundamentalAnalysisReport, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
     
+class FundamentalAnalysisReportSegment(models.Model):
+    report = models.ForeignKey(FundamentalAnalysisReport,on_delete=models.CASCADE,verbose_name = 'Báo cáo' )
+    segment = models.TextField(max_length=1024,verbose_name='Nội dung',null=True, blank=True)
+    class Meta:
+        verbose_name = 'Nội dung báo cáo'
+        verbose_name_plural = 'Nội dung báo cáo'
 
-   
 
+@receiver(post_save, sender=FundamentalAnalysisReport)
+def create_report_segment(sender, instance, created, **kwargs):
+    if created:
+        pdf_path = instance.file.path
+        source = instance.source
+        extracted_text = pdf_text_extract(pdf_path, source)
+
+        for text in extracted_text:
+            segment = FundamentalAnalysisReportSegment(report=instance, segment=text)
+            segment.save()
+     
 class Tag (models.Model):
     name = models.CharField(max_length=50)
     def __str__(self):

@@ -12,6 +12,7 @@ env/
 .vscode
 
 /static
+/media
 
 */migrations/*
 

@@ -2,8 +2,19 @@ from django.contrib import admin
 from .models import *
 
 # Register your models here.
+
+class FundamentalAnalysisReportSegmentAdmin(admin.TabularInline):
+    model = FundamentalAnalysisReportSegment
+    fields = ('segment',)
+    readonly_fields = ['segment',]
 class FundamentalAnalysisReportAdmin(admin.ModelAdmin):
     model = FundamentalAnalysisReport
+    inlines = [FundamentalAnalysisReportSegmentAdmin]
+    fieldsets = (
+        ('Thông tin báo cáo', {
+            'fields': ('date', 'tags', 'file', 'source', 'valuation')
+        }),
+    )
 
 # class StockFundamentalDataAdmin(admin.ModelAdmin):
 #     model= StockFundamentalData
