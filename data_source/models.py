@@ -29,18 +29,28 @@ def pdf_text_extract(pdf_path, source):
                 if len(lines) > 100:
                     lines = lines.replace("Chúng tôi", source)
                     lines = lines.replace("chúng tôi", source)
-                    
-                    if len(current_extracted_text) + len(lines) < 1024:
-                        # Thêm lines vào current_extracted_text nếu không vượt quá giới hạn 1024 ký tự
-                        current_extracted_text += lines
-                    else:
-                        # Nếu vượt quá giới hạn 1024 ký tự, đẩy current_extracted_text vào danh sách extracted_texts
-                        extracted_texts.append(current_extracted_text)
-                        current_extracted_text = lines  # Bắt đầu extracted_text mới
+                    current_extracted_text += lines
 
-    if current_extracted_text:
-        # Đẩy extracted_text cuối cùng vào danh sách extracted_texts nếu còn dư
-        extracted_texts.append(current_extracted_text)
+                    # Kiểm tra độ dài của current_extracted_text
+                    while len(current_extracted_text) > 1024:
+                        # Tách thành hai phần nhỏ
+                        last_period_index = lines.rfind(".", 0, 1024)
+                        if last_period_index != -1:
+                            extracted_text = lines[:last_period_index + 1]
+                            remaining_text = lines[last_period_index + 1:]
+                        else:
+                            extracted_text = current_extracted_text[:1020]
+                            remaining_text = current_extracted_text[1020:]
+
+                        # Thêm extracted_text vào danh sách extracted_texts
+                        extracted_texts.append(extracted_text)
+
+                        # Gán remaining_text cho current_extracted_text để kiểm tra tiếp
+                        current_extracted_text = remaining_text
+
+        if current_extracted_text:
+            # Đẩy extracted_text cuối cùng vào danh sách extracted_texts nếu còn dư
+            extracted_texts.append(current_extracted_text)
 
     return extracted_texts
 
