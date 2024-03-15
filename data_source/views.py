@@ -17,5 +17,5 @@ class FundamentalAnalysisReportSegmentSearchAPIView(generics.ListAPIView):
 
     def get_queryset(self):
         tag = self.request.query_params.get('tag', '')
-        queryset = FundamentalAnalysisReportSegment.objects.filter(report__tags__name=tag).order_by('-report_date')[:100]
+        queryset = FundamentalAnalysisReportSegment.objects.filter(report__tags__name=tag).order_by('-report__date')[:100]
         return queryset
