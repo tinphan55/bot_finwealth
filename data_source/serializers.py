@@ -8,7 +8,7 @@ class FundamentalAnalysisReportSegmentSerializer(serializers.ModelSerializer):
     report_valuation = serializers.FloatField(source='report.valuation')
 
     def get_report_tags(self, obj):
-        return [tag.name for tag in obj.report.tags.all()]
+        return ', '.join([tag.name for tag in obj.report.tags.all()])
 
     class Meta:
         model = FundamentalAnalysisReportSegment
