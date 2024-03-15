@@ -14,30 +14,31 @@ def pdf_text_extract(pdf_path, source):
 
     num_pages = len(doc)  # Số lượng trang trong tệp PDF
     extracted_texts = []  # Danh sách các extracted_text
-
-    current_extracted_text = ""  # Biến lưu trữ extracted_text hiện tại
-
     for i, page in enumerate(doc):
+        current_extracted_text = ""  # Biến lưu trữ extracted_text hiện tại
         if i == num_pages - 1:
-            break  # Kết thúc vòng lặp nếu đó là trang cuối
+            break
 
         # Rút trích văn bản từ trang
         text_blocks = page.get_text('blocks')
         for block in text_blocks:
             for lines in block:
                 lines = str(lines)
+                # Kiểm tra xem dòng bắt đầu bằng "Biểu đồ" hoặc "Bảng"
+                if lines.strip().startswith(("Biểu đồ", "Bảng")):
+                    continue  # Bỏ qua dòng này
                 if len(lines) > 100:
                     lines = lines.replace("Chúng tôi", source)
                     lines = lines.replace("chúng tôi", source)
                     current_extracted_text += lines
 
                     # Kiểm tra độ dài của current_extracted_text
-                    while len(current_extracted_text) > 1024:
+                    if len(current_extracted_text) > 1024:
                         # Tách thành hai phần nhỏ
-                        last_period_index = lines.rfind(". ", 0, 1024)
+                        last_period_index = current_extracted_text.rfind(". ", 0, 1024)
                         if last_period_index != -1:
-                            extracted_text = lines[:last_period_index + 1]
-                            remaining_text = lines[last_period_index + 1:]
+                            extracted_text = current_extracted_text[:last_period_index + 1]
+                            remaining_text = current_extracted_text[last_period_index + 1:]
                         else:
                             extracted_text = current_extracted_text[:1020]
                             remaining_text = current_extracted_text[1020:]
@@ -47,10 +48,11 @@ def pdf_text_extract(pdf_path, source):
                         current_extracted_text = remaining_text
 
         if current_extracted_text:
-            # Đẩy extracted_text cuối cùng vào danh sách extracted_texts nếu còn dư
+            # Thêm extracted_text cuối cùng vào danh sách extracted_texts nếu còn dư
             extracted_texts.append(current_extracted_text)
 
     return extracted_texts
+
 
 
 class DateTrading(models.Model):
