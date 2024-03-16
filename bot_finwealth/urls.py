@@ -23,6 +23,8 @@ import debug_toolbar
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('data_source.urls')), 
+    path('', include('bot_user.urls')), 
+
     
 
 ]

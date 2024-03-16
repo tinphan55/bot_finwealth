@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'data_source',
     'manage_bots',
     'signal_bots',
+    'bot_user',
 ]
 
 MIDDLEWARE = [
