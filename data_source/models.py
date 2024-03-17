@@ -201,6 +201,7 @@ def create_report_segment(sender, instance, created, **kwargs):
             segment.save()
      
 class News(models.Model):
+    username = models.CharField(max_length=100, verbose_name='Người chia sẽ')
     source = models.CharField(max_length=100, blank=True, verbose_name='Nguồn')
     modified_date = models.DateTimeField(auto_now=True ,verbose_name='Ngày tạo')
     tags = models.CharField(max_length=100, blank=True, verbose_name='Cổ phiếu')
