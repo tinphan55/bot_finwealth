@@ -20,10 +20,10 @@ class FundamentalAnalysisReportSegmentSearchAPIView(generics.ListAPIView):
         queryset = FundamentalAnalysisReportSegment.objects.filter(report__tags__name=tag).order_by('-report__date')[:100]
         return queryset
     
-class NewsListAPIView(generics.ListAPIView):
+class NewsCreateAPIView(generics.CreateAPIView):
     queryset = News.objects.all()
     serializer_class = NewsSerializer
 
-class NewsDetailAPIView(generics.RetrieveAPIView):
+class NewsListAPIView(generics.ListAPIView):
     queryset = News.objects.all()
     serializer_class = NewsSerializer
