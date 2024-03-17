@@ -32,3 +32,4 @@ class FundamentalAnalysisReportAdmin(admin.ModelAdmin):
 
 admin.site.register(FundamentalAnalysisReport,FundamentalAnalysisReportAdmin)
 admin.site.register(Tag)
+admin.site.register(News)

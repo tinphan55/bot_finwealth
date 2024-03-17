@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import FundamentalAnalysisReportSegment, FundamentalAnalysisReport
+from .models import *
 
 class FundamentalAnalysisReportSegmentSerializer(serializers.ModelSerializer):
     report_date = serializers.DateField(source='report.date')
@@ -14,3 +14,7 @@ class FundamentalAnalysisReportSegmentSerializer(serializers.ModelSerializer):
         model = FundamentalAnalysisReportSegment
         exclude = ['report']
 
+class NewsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = News
+        fields = '__all__'

@@ -200,6 +200,18 @@ def create_report_segment(sender, instance, created, **kwargs):
             segment = FundamentalAnalysisReportSegment(report=instance, segment=text)
             segment.save()
      
+class News(models.Model):
+    source = models.CharField(max_length=100, blank=True, verbose_name='Nguồn')
+    modified_date = models.DateTimeField(auto_now=True ,verbose_name='Ngày tạo')
+    date = models.DateField(verbose_name='Ngày báo cáo')
+    tags = models.ManyToManyField('Tag')
+    content = models.TextField(verbose_name = 'Nội dung')
+
+    class Meta:
+        verbose_name = 'Thông tin ghi nhận'
+        verbose_name_plural = 'Thông tin ghi nhận'
+     
+
 class Tag (models.Model):
     name = models.CharField(max_length=50)
     def __str__(self):
