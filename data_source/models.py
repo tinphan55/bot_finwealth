@@ -203,7 +203,6 @@ def create_report_segment(sender, instance, created, **kwargs):
 class News(models.Model):
     source = models.CharField(max_length=100, blank=True, verbose_name='Nguồn')
     modified_date = models.DateTimeField(auto_now=True ,verbose_name='Ngày tạo')
-    date = models.DateTimeField(verbose_name='Thời gian nhận tin')
     tags = models.CharField(max_length=100, blank=True, verbose_name='Cổ phiếu')
     content = models.TextField(verbose_name = 'Nội dung')
 
