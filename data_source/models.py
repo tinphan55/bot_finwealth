@@ -16,13 +16,12 @@ def clean_text(text):
     cleaned_text = re.sub(r'\s{2,}', ' ', cleaned_text)  # Loại bỏ dấu cách dư thừa
     return cleaned_text
 
-def pdf_text_extract(pdf_path, source):
+def pdf_text_extract(pdf_path, source, max_leng):
     doc = fitz.open(pdf_path)
-
+    current_extracted_text = ""  # Biến lưu trữ extracted_text hiện tại
     num_pages = len(doc)  # Số lượng trang trong tệp PDF
     extracted_texts = []  # Danh sách các extracted_text
     for i, page in enumerate(doc):
-        current_extracted_text = ""  # Biến lưu trữ extracted_text hiện tại
         if i == num_pages - 1:
             break
 
@@ -37,26 +36,30 @@ def pdf_text_extract(pdf_path, source):
                 if len(lines) > 100:
                     lines = lines.replace("Chúng tôi", source)
                     lines = lines.replace("chúng tôi", source)
+                    lines =clean_text(lines)
                     current_extracted_text += lines
-                    current_extracted_text =clean_text(current_extracted_text) 
-                    while len(current_extracted_text) > 1024:
-                        last_period_index = current_extracted_text.rfind(". ", 0, 1024)
-                        if last_period_index != -1:
-                            extracted_text = current_extracted_text[:last_period_index + 1]
-                            remaining_text = current_extracted_text[last_period_index + 1:]
-                        else:
-                            extracted_text = current_extracted_text[:1020]
-                            remaining_text = current_extracted_text[1020:]
+    if len(current_extracted_text) <= max_leng:
+        extracted_texts.append(current_extracted_text)
+    else:
+        while len(current_extracted_text) > max_leng:
+            last_period_index = current_extracted_text.rfind(". ", 0, max_leng)
+            if last_period_index != -1:
+                extracted_text = current_extracted_text[:last_period_index + 1]
+                remaining_text = current_extracted_text[last_period_index + 1:]
+            else:
+                extracted_text = current_extracted_text[:max_leng-5]
+                remaining_text = current_extracted_text[max_leng-5:]
 
-                        # Thêm extracted_text vào danh sách extracted_texts
-                        extracted_texts.append(extracted_text)
-                        # Gán remaining_text cho current_extracted_text để kiểm tra tiếp
-                        current_extracted_text = remaining_text
+            # Thêm extracted_text vào danh sách extracted_texts
+            extracted_texts.append(extracted_text)
+            # Gán remaining_text cho current_extracted_text để kiểm tra tiếp
+            current_extracted_text = remaining_text
         
 
-    if current_extracted_text:
-        # Thêm extracted_text cuối cùng vào danh sách extracted_texts nếu còn dư
-        extracted_texts.append(current_extracted_text)
+        if current_extracted_text:
+            # Thêm extracted_text cuối cùng vào danh sách extracted_texts nếu còn dư
+            extracted_texts.append(current_extracted_text)
+    
     return extracted_texts
 
 
@@ -162,16 +165,13 @@ class FundamentalAnalysisReport(models.Model):
     def __str__(self):
         return str(self.name) 
     
-    # def clean(self):
-    #     # Method này sẽ được gọi khi bạn gọi phương thức full_clean, hoặc khi form gọi phương thức clean
-    #     # Thực hiện kiểm tra trùng lặp
-    #     if self._state.adding:
-    #         print('có')
-    #         if FundamentalAnalysisReport.objects.filter(date=self.date, source=self.source, name=self.name).exists():
-    #             raise ValidationError("Đã có báo cáo tương tự được tải lên")
-    
-
-
+    def clean(self):
+        # Method này sẽ được gọi khi bạn gọi phương thức full_clean, hoặc khi form gọi phương thức clean
+        # Thực hiện kiểm tra trùng lặp
+        if self._state.adding:
+            print('có')
+            if FundamentalAnalysisReport.objects.filter(date=self.date, source=self.source, name=self.name).exists():
+                raise ValidationError("Đã có báo cáo tương tự được tải lên")
     
         
     def save(self, *args, **kwargs):
@@ -181,7 +181,7 @@ class FundamentalAnalysisReport(models.Model):
     
 class FundamentalAnalysisReportSegment(models.Model):
     report = models.ForeignKey(FundamentalAnalysisReport,on_delete=models.CASCADE,verbose_name = 'Báo cáo' )
-    segment = models.TextField(max_length=1024,verbose_name='Nội dung',null=True, blank=True)
+    segment = models.TextField(verbose_name='Nội dung',null=True, blank=True)
     class Meta:
         verbose_name = 'Nội dung báo cáo'
         verbose_name_plural = 'Nội dung báo cáo'
@@ -194,7 +194,7 @@ def create_report_segment(sender, instance, created, **kwargs):
     if created:
         pdf_path = instance.file.path
         source = instance.source
-        extracted_text = pdf_text_extract(pdf_path, source)
+        extracted_text = pdf_text_extract(pdf_path, source,5000)
 
         for text in extracted_text:
             segment = FundamentalAnalysisReportSegment(report=instance, segment=text)
