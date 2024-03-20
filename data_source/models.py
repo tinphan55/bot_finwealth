@@ -138,7 +138,7 @@ class StockShareholder(models.Model):
 
 from django.db import models
 
-class StockFundamentalData(models.Model):
+class StockOverviewDataTrading(models.Model):
     ticker = models.ForeignKey(StockOverview, on_delete=models.CASCADE, verbose_name='Cổ phiếu')
     marketcap = models.FloatField(verbose_name='Market Cap')
     volume_avg_cr_10d = models.FloatField(verbose_name='Volume Average CR 10D')
@@ -154,7 +154,7 @@ class StockFundamentalData(models.Model):
     roae_tr_avg5q = models.FloatField(verbose_name='ROAE TR AVG5Q')
     roaa_tr_avg5q = models.FloatField(verbose_name='ROAA TR AVG5Q')
     eps_tr = models.FloatField(verbose_name='EPS TR')
-    avg_valuation = models.FloatField(verbose_name='avg_valuation')
+    avg_target_price = models.FloatField(verbose_name='avg_target_price')
 
     def __str__(self):
         return self.ticker
