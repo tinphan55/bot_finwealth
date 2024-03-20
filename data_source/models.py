@@ -121,25 +121,44 @@ class StockOverview(models.Model):
     company_name  = models.CharField(max_length=200,verbose_name='Tên công ty') 
     stock_exchange = models.CharField(max_length=200,verbose_name='Sàn niêm yết')
     listed_date= models.DateField(max_length=200,verbose_name='Ngày niêm yết')
+    floor =models.CharField(max_length=200,verbose_name='Sàn giao dịch') 
     introduce = models.CharField(max_length=200,verbose_name='Giới thiệu')
     
+class StockShareholder(models.Model):
+    ticker = models.ForeignKey(StockOverview,on_delete=models.CASCADE,verbose_name = 'Cổ phiếu' )
+    shareholder_name = models.CharField(max_length=100)
+    role_type = models.CharField(max_length=50)
+    number_of_shares = models.FloatField()
+    ownership_pct = models.FloatField()
+    effective_date = models.DateField()
 
+    def __str__(self):
+        return self.shareholder_name
   
 
+from django.db import models
+
 class StockFundamentalData(models.Model):
-    ticker = models.ForeignKey(StockOverview,on_delete=models.CASCADE,verbose_name = 'Cổ phiếu' )
-    eps = models.FloatField(null=True, verbose_name = 'EPS')
-    roa = models.FloatField(null=True, verbose_name = 'ROA')
-    roe = models.FloatField(null=True, verbose_name = 'ROE')
-    dept_ratio = models.FloatField(null=True, verbose_name = 'Tỷ lệ nợ')
-    bvps = models.FloatField( null=True,verbose_name = 'BVPS')
-    market_price = models.FloatField( null=True,verbose_name = 'Giá thị trường')
-    p_e = models.FloatField( null=True,verbose_name = 'P/E')
-    p_b= models.FloatField( null=True,verbose_name = 'P/B')
-    growth_rating = models.FloatField(null=True,verbose_name = 'Điểm tăng trưởng')
-    stable_rating = models.FloatField(null=True,verbose_name = 'Điểm an toàn')
-    valuation_rating = models.FloatField(null=True,verbose_name = 'Điểm định giá')
-    fundamental_rating  = models.FloatField(null=True,verbose_name = 'Điểm cơ bản')
+    ticker = models.ForeignKey(StockOverview, on_delete=models.CASCADE, verbose_name='Cổ phiếu')
+    marketcap = models.FloatField(verbose_name='Market Cap')
+    volume_avg_cr_10d = models.FloatField(verbose_name='Volume Average CR 10D')
+    price_highest_cr_52w = models.FloatField(verbose_name='Price Highest CR 52W')
+    price_lowest_cr_52w = models.FloatField(verbose_name='Price Lowest CR 52W')
+    outstanding_shares = models.FloatField(verbose_name='Outstanding Shares')
+    freefloat = models.FloatField(verbose_name='Free Float')
+    beta = models.FloatField(verbose_name='Beta')
+    price_to_earnings = models.FloatField(verbose_name='Price to Earnings')
+    price_to_book = models.FloatField(verbose_name='Price to Book')
+    dividend_yield = models.FloatField(verbose_name='Dividend Yield')
+    bvps_cr = models.FloatField(verbose_name='BVPS CR')
+    roae_tr_avg5q = models.FloatField(verbose_name='ROAE TR AVG5Q')
+    roaa_tr_avg5q = models.FloatField(verbose_name='ROAA TR AVG5Q')
+    eps_tr = models.FloatField(verbose_name='EPS TR')
+    avg_valuation = models.FloatField(verbose_name='avg_valuation')
+
+    def __str__(self):
+        return self.ticker
+
 
     class Meta:
         verbose_name = 'Dữ liệu cơ bản'
@@ -148,7 +167,17 @@ class StockFundamentalData(models.Model):
     def __str__(self):
         return self.ticker
     
+class StockValuation(models.Model):
+    ticker = models.ForeignKey(StockOverview,on_delete=models.CASCADE,verbose_name = 'Cổ phiếu' )
+    firm = models.CharField(max_length=100)
+    type = models.CharField(max_length=50)
+    report_date = models.DateField()
+    source = models.CharField(max_length=50)
+    report_price = models.FloatField()
+    target_price = models.FloatField()
 
+    def __str__(self):
+        return self.ticker
 
 class FundamentalAnalysisReport(models.Model):
     name = models.CharField(max_length=100, blank=True,null=True, verbose_name='Tên báo cáo')

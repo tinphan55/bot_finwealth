@@ -279,71 +279,41 @@ def metakit_stock_price_import():
 
     print('Tai data chứng khoán xong')
 
+def return_json_data(data):
+    data_dict = json.loads(data)
+    data_list = data_dict['data']
+    return data_list
 
-def save_event_stock(stock):
-    list_event =[]
-    linkbase= 'https://www.stockbiz.vn/MarketCalendar.aspx?Symbol='+ stock
-    r = requests.get(linkbase)
-    soup = BeautifulSoup(r.text,'html.parser')
-    table = soup.find('table', class_='dataTable')  # Tìm bảng chứa thông tin
-    if table:
-        rows = table.find_all('tr')  # Lấy tất cả các dòng trong bảng (loại bỏ dòng tiêu đề)
-        cash_value= 0
-        stock_value=0
-        stock_option_value=0
-        price_option_value=0
-        dividend_type = 'order'
-        for row in rows[1:]:  # Bắt đầu từ vị trí thứ hai (loại bỏ dòng tiêu đề)
-            dividend  = {}
-            columns = row.find_all('td')  # Lấy tất cả các cột trong dòng
-            if len(columns) >= 3:  # Kiểm tra số lượng cột
-                dividend['ex_rights_date'] = columns[0].get_text(strip=True)
-                dividend['event'] = columns[4].get_text(strip=True)
-                list_event.append(dividend)
-                event = dividend['event'].lower()
-                ex_rights_date = datetime.strptime(dividend['ex_rights_date'], '%d/%m/%Y').date()
-                if ex_rights_date == datetime.now().date():
-                    if 'tiền' in event:
-                        dividend_type = 'cash'
-                        cash = re.findall(r'\d+', event)  # Tìm tất cả các giá trị số trong chuỗi
-                        if cash:
-                            value1 = int(cash[-1])/1000  # Lấy giá trị số đầu tiên
-                            cash_value += value1
-                    elif 'cổ phiếu' in event and 'phát hành' not in event:
-                        dividend_type = 'stock'
-                        stock_values = re.findall(r'\d+', event)
-                        if stock_values:
-                            value2 = int(stock_values[-1])/int(stock_values[-2])
-                            stock_value += value2
-                    elif 'cổ phiếu' in event and 'giá' in event and 'tỷ lệ' in event:
-                        dividend_type = 'option'
-                        option = re.findall(r'\d+', event)
-                        if option:
-                                stock_option_value = int(option[-2])/int(option[-3])
-                                price_option_value = int(option[-1])
-        if dividend_type == 'order':
-            pass
-        else:
-            DividendManage.objects.update_or_create(
-                        ticker= stock,  # Thay thế 'Your_Ticker_Value' bằng giá trị ticker thực tế
-                        date_apply=ex_rights_date,
-                        defaults={
-                            'type': dividend_type,
-                            'cash': cash_value,
-                            'stock': stock_value,
-                            'price_option': price_option_value,
-                            'stock_option':stock_option_value
-                        }
-                    )
-    return list_event
+def get_overview_stock(stock):
+    url = f"https://finfo-api.vndirect.com.vn/v4/stocks?fields=code,shortName,companyName,companyNameEng,floor,status,listedDate&q=code:{stock}"
+    payload = {}
+    headers = {
+    'Accept': 'application/json, text/javascript, */*; q=0.01',
+    'Accept-Language': 'vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive',
+    'Content-Type': 'application/json',
+    'Origin': 'https://www.vndirect.com.vn',
+    'Pragma': 'no-cache',
+    'Referer': 'https://www.vndirect.com.vn/',
+    'Sec-Fetch-Dest': 'empty',
+    'Sec-Fetch-Mode': 'cors',
+    'Sec-Fetch-Site': 'same-site',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'sec-ch-ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+    'sec-ch-ua-mobile': '?0',
+    'sec-ch-ua-platform': '"Windows"'
+    }
+    response = requests.request("GET", url, headers=headers, data=payload)
+    overview = json.loads(response.text)['data'][0]
+    url = f"https://finfo-api.vndirect.com.vn/v4/company_profiles?q=code:{stock}"
+    response = requests.request("GET", url, headers=headers, data=payload)
+    json_data = return_json_data(response.text)
+    vn_summary = json_data[0]['vnSummary']
+    overview['introduce'] = vn_summary
+    return overview
 
-def check_dividend():
-    signal = Signaldaily.objects.filter(is_closed = False)
-    for stock in signal:
-        dividend = save_event_stock(stock.ticker)
-    dividend_today = DividendManage.objects.filter(date_apply =datetime.now().date() )
-    for i in dividend_today:
-        i.save()
+
         
 def save_valuation_stock_company(stock,days=360):
     url1 = "https://finfo-api.vndirect.com.vn/v4/recommendations?q=code:"
@@ -371,12 +341,10 @@ def save_valuation_stock_company(stock,days=360):
     }
     response = requests.request("GET", url, headers=headers, data=payload)
     data = response.text
-    data_dict = json.loads(data)
-    data_list = data_dict['data']
-    return data_list
+    return return_json_data(data)
     
 def shareholder_company(stock):
-    url = f"https://finfo-api.vndirect.com.vn/v4/shareholders?sort=ownershipPct:desc&q=code:{stock}Ư~ownershipPct:gte:5"
+    url = f"https://finfo-api.vndirect.com.vn/v4/shareholders?sort=ownershipPct:desc&q=code:{stock}~ownershipPct:gte:5"
     payload = {}
     headers = {
     'Accept': 'application/json, text/javascript, */*; q=0.01',
@@ -395,11 +363,9 @@ def shareholder_company(stock):
     'sec-ch-ua-mobile': '?0',
     'sec-ch-ua-platform': '"Windows"'
     }
-
     response = requests.request("GET", url, headers=headers, data=payload)
     data = response.text
-    data_dict = json.loads(data)
-    data_list = data_dict['data']
+    data_list = return_json_data(data)[0]
     return data_list
 
 def save_fa_raw(stock):
@@ -424,37 +390,16 @@ def save_fa_raw(stock):
     'sec-ch-ua-platform': '"Windows"'
     }
     response = requests.request("GET", url, headers=headers, data=payload)
-    data_list_1 = response.text
-
+    data1 =return_json_data(response.text)
     # chỉ số lợi nhuận
     url = "https://finfo-api.vndirect.com.vn/v4/ratios/latest?filter=ratioCode:ROAE_TR_AVG5Q,ROAA_TR_AVG5Q,EPS_TR,&where=code:VNM~reportDate:gt:2023-11-05&order=reportDate&fields=ratioCode,value"
-
-    payload = {}
-    headers = {
-    'Accept': 'application/json, text/javascript, */*; q=0.01',
-    'Accept-Language': 'vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7',
-    'Cache-Control': 'no-cache',
-    'Connection': 'keep-alive',
-    'Content-Type': 'application/json',
-    'Origin': 'https://www.vndirect.com.vn',
-    'Pragma': 'no-cache',
-    'Referer': 'https://www.vndirect.com.vn/',
-    'Sec-Fetch-Dest': 'empty',
-    'Sec-Fetch-Mode': 'cors',
-    'Sec-Fetch-Site': 'same-site',
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-    'sec-ch-ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
-    'sec-ch-ua-mobile': '?0',
-    'sec-ch-ua-platform': '"Windows"'
-    }
-
     response = requests.request("GET", url, headers=headers, data=payload)
+    data2 = return_json_data(response.text)
+    data =data1 + data2
+    return data
+    
 
-    data_list_2 = response.text
-
-    # chỉ số tăng trương so sánh
-
-def compare_ration_yearly()
+def compare_ration_yearly():
     # năm t-3
     url = "https://finfo-api.vndirect.com.vn/v4/ratios?q=code:VNM~ratioCode:NET_SALES_TR_GRYOY,NET_PROFIT_TR_GRYOY,OPERATING_EBIT_TR_GRYOY,GROSS_MARGIN_TR,ROAA_TR_AVG5Q,ROAE_TR_AVG5Q,DEBT_TO_EQUITY_AQ,DIVIDEND_YIELD,CFO_TO_SALES_TR,INTEREST_COVERAGE_TR,CPS_AQ~reportDate:2020-12-31"
 
@@ -597,9 +542,3 @@ def financial_statements(stock,previous_year,quarter=True ):
         financial_statements.append(data)
         return financial_statements
 
-
-
-https://www.bsc.com.vn/api/Data/Finance/LastestFinancialReports?symbol=VNM&type=1&year=2024&quarter=1&count=5
-
-
-https://www.bsc.com.vn/api/Data/Finance/LastestFinancialReports?symbol=VNM&type=1&year=2024&quarter=1&count=5
