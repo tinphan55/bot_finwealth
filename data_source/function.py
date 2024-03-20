@@ -544,12 +544,14 @@ def financial_statements(stock,previous_year,quarter=True ):
 
 
 #StockOverview
-# date = datetime.now().date() - timedelta(days=6)
+# date = datetime.now().date() - timedelta(days=7)
 # list_stock = StockPriceFilter.objects.filter(date=date)
-# for item in list_stock:
+# for item in list_stock[1158:]:
+#     print(item.ticker)
 #     try:
 #         data = get_overview_stock(item.ticker)
 #         ticker = data['code']
+#         print(ticker)
 #         # Kiểm tra xem ticker đã tồn tại trong StockOverview hay chưa
 #         stock_overview = StockOverview.objects.get(ticker=ticker)
 #     except StockOverview.DoesNotExist:
@@ -561,32 +563,75 @@ def financial_statements(stock,previous_year,quarter=True ):
 #             listed_date=data['listedDate'],
 #             introduce=data['introduce']
 #         )
-# # StockShareholder   
-# for item in list_stock:    
-#     data = shareholder_company(item.ticker)
-#     for object in data:
-#         ticker = StockOverview.objects.get(ticker=item.ticker)
-#         shareholder_name = object['shareholderName']
-#         role_type = object['roleType']
-#         number_of_shares = object['numberOfShares']
-#         ownership_pct = object['ownershipPct']
-#         effective_date = datetime.strptime(object['effectiveDate'], '%Y-%m-%d').date()
-#         stock_shareholder, created = StockShareholder.objects.get_or_create(
-#             ticker=ticker,
-#             shareholder_name=shareholder_name,
-#             defaults={
-#                 'role_type': role_type,
-#                 'number_of_shares': number_of_shares,
-#                 'ownership_pct': ownership_pct,
-#                 'effective_date': effective_date
-#             }
-#         )
-#         if not created:
-#             # Nếu đã tồn tại, cập nhật các trường dữ liệu
-#             stock_shareholder.role_type = role_type
-#             stock_shareholder.number_of_shares = number_of_shares
-#             stock_shareholder.ownership_pct = ownership_pct
-#             stock_shareholder.effective_date = effective_date
-#             stock_shareholder.save()
 
+
+
+
+
+
+# def process_data_list():
+#     date = datetime.now().date() - timedelta(days=7)
+#     list_stock = StockPriceFilter.objects.filter(date=date)
+#     for item in list_stock:    
+#         data = shareholder_company(item.ticker)
+#         for object in data:
+#             try:
+#                 ticker = StockOverview.objects.get(ticker=item.ticker)
+#                 shareholder_name = object['shareholderName']
+#                 role_type = object['roleType']
+#                 number_of_shares = object['numberOfShares']
+#                 ownership_pct = object['ownershipPct']
+#                 effective_date = datetime.strptime(object['effectiveDate'], '%Y-%m-%d').date()
+#                 stock_shareholder, created = StockShareholder.objects.get_or_create(
+#                     ticker=ticker,
+#                     shareholder_name=shareholder_name,
+#                     defaults={
+#                         'role_type': role_type,
+#                         'number_of_shares': number_of_shares,
+#                         'ownership_pct': ownership_pct,
+#                         'effective_date': effective_date
+#                     }
+#                 )
+#                 if not created:
+#                     # Nếu đã tồn tại, cập nhật các trường dữ liệu
+#                     stock_shareholder.role_type = role_type
+#                     stock_shareholder.number_of_shares = number_of_shares
+#                     stock_shareholder.ownership_pct = ownership_pct
+#                     stock_shareholder.effective_date = effective_date
+#                     stock_shareholder.save()
+#             except Exception as e:
+#                 print(f"Lỗi xảy ra khi lưu giá trị: {data}. Lỗi: {str(e)}")
+#         data_list  =save_valuation_stock_company(item.ticker,days=360)
+#         for data in data_list:
+#             try:
+#                 print(item.ticker)
+#                 ticker = StockOverview.objects.get(ticker=data['code'])
+#                 firm = data['firm']
+#                 type = data['type']
+#                 report_date = datetime.strptime(data['reportDate'], '%Y-%m-%d').date()
+#                 source = data['source']
+#                 report_price = data['reportPrice']
+#                 target_price = data['targetPrice']
+#                 stock_valuation, created = StockValuation.objects.get_or_create(
+#                     ticker=ticker,
+#                     firm=firm,
+#                     report_date=report_date,
+#                     defaults={
+#                         'source': source,
+#                         'report_price': report_price,
+#                         'target_price': target_price
+#                     }
+#                 )
+#                 if not created:
+#                     # Nếu đã tồn tại, cập nhật các trường dữ liệu
+#                     stock_valuation.source = source
+#                     stock_valuation.report_price = report_price
+#                     stock_valuation.target_price = target_price
+#                     stock_valuation.save()
+#             except Exception as e:
+#                 print(f"Lỗi xảy ra khi lưu giá trị: {data}. Lỗi: {str(e)}")
+#         time.sleep(30)
+
+# import schedule
+# import time
 
