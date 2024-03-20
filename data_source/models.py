@@ -117,12 +117,11 @@ class SectorPrice(models.Model):
 
 
 class StockOverview(models.Model):
-    ticker = models.CharField(max_length=15,  verbose_name = 'Cổ phiếu' ) 
+    # ticker = models.CharField(max_length=15,  verbose_name = 'Cổ phiếu' ) 
     company_name  = models.CharField(max_length=200,verbose_name='Tên công ty') 
     stock_exchange = models.CharField(max_length=200,verbose_name='Sàn niêm yết')
     listed_date= models.DateField(max_length=200,verbose_name='Ngày niêm yết')
-    floor =models.CharField(max_length=200,null=True,blank=True,verbose_name='Sàn giao dịch') 
-    introduce = models.CharField(max_length=200,null=True,blank=True,verbose_name='Giới thiệu')
+    introduce = models.TextField(null=True,blank=True,verbose_name='Giới thiệu')
     
 class StockShareholder(models.Model):
     ticker = models.ForeignKey(StockOverview,on_delete=models.CASCADE,verbose_name = 'Cổ phiếu' )

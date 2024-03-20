@@ -16,41 +16,41 @@ def define_stock_date_to_sell(buy_date, days=2):
         next_trading_date = trading_dates.first().date
     return next_trading_date
 
-def save_fa_valuation():
-    fa = StockFundamentalData.objects.all()
-    for self in fa:
-        stock = StockPriceFilter.objects.filter(ticker = self.ticker).order_by('-date_time').first()
-        if stock:
-            self.market_price = stock.close
-        if self.bvps and self.market_price :
-            self.p_b = round(self.market_price*1000/self.bvps,2)
-            #dept từ 0-1: 80-100 điểm, 1-5: 50-80 điểm, 5-10: 20 - 50, trên 10: 20
-            if self.p_b > 0 and self.p_b <=1 :
-                rating_pb = 100 - (self.p_b-0) /(1-0)*(100-80)
-            elif self.p_b >1 and self.p_b<=10:
-                rating_pb = 80 - (self.p_b-1) /(10-1)*(80-50)
-            elif self.p_b >10:
-                rating_pb = 40
-            else:
-                rating_pb = 0
-        else:
-            rating_pb = 0
-        if self.eps and self.market_price:
-            self.p_e = round(self.market_price*1000/self.eps,2)
-            #dept từ 0-1: 80-100 điểm, 1-5: 50-80 điểm, 5-10: 20 - 50, trên 10: 20
-            if self.p_e > 0 and self.p_e <=1 :
-                rating_pe = 100 - (self.p_e-0) /(1-0)*(100-80)
-            elif self.p_e >1 and self.p_e<=10:
-                rating_pe = 80 - (self.p_e-1) /(10-1)*(80-50)
-            elif self.p_e >10:
-                rating_pe = 40
-            else:
-                rating_pe = 0
-        else:
-            rating_pe = 0
-        self.valuation_rating  = round(rating_pb*0.5+rating_pe*0.5,2)
-        self.fundamental_rating = round(self.growth_rating*0.5 + self.valuation_rating*0.3 + self.stable_rating*0.2,2)
-        self.save()
+# def save_fa_valuation():
+#     fa = StockFundamentalData.objects.all()
+#     for self in fa:
+#         stock = StockPriceFilter.objects.filter(ticker = self.ticker).order_by('-date_time').first()
+#         if stock:
+#             self.market_price = stock.close
+#         if self.bvps and self.market_price :
+#             self.p_b = round(self.market_price*1000/self.bvps,2)
+#             #dept từ 0-1: 80-100 điểm, 1-5: 50-80 điểm, 5-10: 20 - 50, trên 10: 20
+#             if self.p_b > 0 and self.p_b <=1 :
+#                 rating_pb = 100 - (self.p_b-0) /(1-0)*(100-80)
+#             elif self.p_b >1 and self.p_b<=10:
+#                 rating_pb = 80 - (self.p_b-1) /(10-1)*(80-50)
+#             elif self.p_b >10:
+#                 rating_pb = 40
+#             else:
+#                 rating_pb = 0
+#         else:
+#             rating_pb = 0
+#         if self.eps and self.market_price:
+#             self.p_e = round(self.market_price*1000/self.eps,2)
+#             #dept từ 0-1: 80-100 điểm, 1-5: 50-80 điểm, 5-10: 20 - 50, trên 10: 20
+#             if self.p_e > 0 and self.p_e <=1 :
+#                 rating_pe = 100 - (self.p_e-0) /(1-0)*(100-80)
+#             elif self.p_e >1 and self.p_e<=10:
+#                 rating_pe = 80 - (self.p_e-1) /(10-1)*(80-50)
+#             elif self.p_e >10:
+#                 rating_pe = 40
+#             else:
+#                 rating_pe = 0
+#         else:
+#             rating_pe = 0
+#         self.valuation_rating  = round(rating_pb*0.5+rating_pe*0.5,2)
+#         self.fundamental_rating = round(self.growth_rating*0.5 + self.valuation_rating*0.3 + self.stable_rating*0.2,2)
+#         self.save()
 
 def get_all_info_stock_price():
     boardname = ['HOSE','HNX','UPCOM']
@@ -542,3 +542,16 @@ def financial_statements(stock,previous_year,quarter=True ):
         financial_statements.append(data)
         return financial_statements
 
+
+
+# date = datetime.now().date()-timedelta(days=6)
+# list_stock = StockPriceFilter.objects.filter(date =date)
+# for item in list_stock:
+#     data = get_overview_stock(item.ticker)
+#     user = StockOverview.objects.create(
+#         ticker=data['code'],
+#         company_name=data['companyName'],
+#         stock_exchange=data['floor'],
+#         listed_date=data['listedDate'],
+#         introduce=data['introduce']
+#         )
