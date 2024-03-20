@@ -365,7 +365,7 @@ def shareholder_company(stock):
     }
     response = requests.request("GET", url, headers=headers, data=payload)
     data = response.text
-    data_list = return_json_data(data)[0]
+    data_list = return_json_data(data)
     return data_list
 
 def save_fa_raw(stock):
@@ -543,15 +543,50 @@ def financial_statements(stock,previous_year,quarter=True ):
         return financial_statements
 
 
-
-# date = datetime.now().date()-timedelta(days=6)
-# list_stock = StockPriceFilter.objects.filter(date =date)
+#StockOverview
+# date = datetime.now().date() - timedelta(days=6)
+# list_stock = StockPriceFilter.objects.filter(date=date)
 # for item in list_stock:
-#     data = get_overview_stock(item.ticker)
-#     user = StockOverview.objects.create(
-#         ticker=data['code'],
-#         company_name=data['companyName'],
-#         stock_exchange=data['floor'],
-#         listed_date=data['listedDate'],
-#         introduce=data['introduce']
+#     try:
+#         data = get_overview_stock(item.ticker)
+#         ticker = data['code']
+#         # Kiểm tra xem ticker đã tồn tại trong StockOverview hay chưa
+#         stock_overview = StockOverview.objects.get(ticker=ticker)
+#     except StockOverview.DoesNotExist:
+#         # Tạo đối tượng StockOverview nếu ticker chưa tồn tại
+#         stock_overview = StockOverview.objects.create(
+#             ticker=ticker,
+#             company_name=data['companyName'],
+#             stock_exchange=data['floor'],
+#             listed_date=data['listedDate'],
+#             introduce=data['introduce']
 #         )
+# # StockShareholder   
+# for item in list_stock:    
+#     data = shareholder_company(item.ticker)
+#     for object in data:
+#         ticker = StockOverview.objects.get(ticker=item.ticker)
+#         shareholder_name = object['shareholderName']
+#         role_type = object['roleType']
+#         number_of_shares = object['numberOfShares']
+#         ownership_pct = object['ownershipPct']
+#         effective_date = datetime.strptime(object['effectiveDate'], '%Y-%m-%d').date()
+#         stock_shareholder, created = StockShareholder.objects.get_or_create(
+#             ticker=ticker,
+#             shareholder_name=shareholder_name,
+#             defaults={
+#                 'role_type': role_type,
+#                 'number_of_shares': number_of_shares,
+#                 'ownership_pct': ownership_pct,
+#                 'effective_date': effective_date
+#             }
+#         )
+#         if not created:
+#             # Nếu đã tồn tại, cập nhật các trường dữ liệu
+#             stock_shareholder.role_type = role_type
+#             stock_shareholder.number_of_shares = number_of_shares
+#             stock_shareholder.ownership_pct = ownership_pct
+#             stock_shareholder.effective_date = effective_date
+#             stock_shareholder.save()
+
+

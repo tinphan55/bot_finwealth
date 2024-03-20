@@ -118,14 +118,14 @@ class SectorPrice(models.Model):
 
 class StockOverview(models.Model):
     ticker = models.CharField(max_length=15,  verbose_name = 'Cổ phiếu' ) 
-    company_name  = models.CharField(max_length=200,verbose_name='Tên công ty') 
-    stock_exchange = models.CharField(max_length=200,verbose_name='Sàn niêm yết')
-    listed_date= models.DateField(max_length=200,verbose_name='Ngày niêm yết')
+    company_name  = models.CharField(max_length=400,verbose_name='Tên công ty') 
+    stock_exchange = models.CharField(max_length=400,verbose_name='Sàn niêm yết')
+    listed_date= models.DateField(verbose_name='Ngày niêm yết')
     introduce = models.TextField(null=True,blank=True,verbose_name='Giới thiệu')
     
 class StockShareholder(models.Model):
     ticker = models.ForeignKey(StockOverview,on_delete=models.CASCADE,verbose_name = 'Cổ phiếu' )
-    shareholder_name = models.CharField(max_length=100)
+    shareholder_name = models.CharField(max_length=400)
     role_type = models.CharField(max_length=50)
     number_of_shares = models.FloatField()
     ownership_pct = models.FloatField()
@@ -134,8 +134,6 @@ class StockShareholder(models.Model):
     def __str__(self):
         return self.shareholder_name
   
-
-from django.db import models
 
 class StockOverviewDataTrading(models.Model):
     ticker = models.ForeignKey(StockOverview, on_delete=models.CASCADE, verbose_name='Cổ phiếu')
