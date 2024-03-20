@@ -345,28 +345,6 @@ def check_dividend():
     for i in dividend_today:
         i.save()
         
-    
-def check_update_analysis_and_send_notifications():
-    # Lọc các bản ghi có modified_date max trong cùng ticker
-    filtered_records = []
-    # Lấy danh sách các ticker và modified_date max
-    latest_records = FundamentalAnalysis.objects.values('ticker').annotate(max_modified_date=Max('modified_date'))
-    for record in latest_records:
-        ticker = record['ticker']
-        max_modified_date = record['max_modified_date']
-        ticker_records = FundamentalAnalysis.objects.filter(ticker=ticker, modified_date=max_modified_date)
-        filtered_records.extend(ticker_records)
-    # Lọc các record có modified_date max có ngày nhỏ hơn ngày hiện tại - 90 ngày
-    current_date = datetime.now()
-    threshold_date = current_date - timedelta(days=90)
-    records_to_notify = [record for record in filtered_records if record.modified_date <= threshold_date]
-    for record in records_to_notify:
-        bot = Bot(token='5881451311:AAEJYKo0ttHU0_Ztv3oGuf-rfFrGgajjtEk')
-        bot.send_message(
-                chat_id='-870288807', 
-                text=f"Cổ phiếu {record.ticker} đã quá 3 tháng chưa có cập nhật thông tin mới, hãy cập nhật ngay nhé Vũ/Thạch ơi!!!" )   
-
-
 def save_valuation_stock_company(stock,days=360):
     url1 = "https://finfo-api.vndirect.com.vn/v4/recommendations?q=code:"
     url2 = "~reportDate:gte:"
@@ -395,78 +373,61 @@ def save_valuation_stock_company(stock,days=360):
     data = response.text
     data_dict = json.loads(data)
     data_list = data_dict['data']
-    # In ra dữ liệu trong list 'data'
-    for item in data_list:
-        stock = StockFundamentalData.objects.filter(ticker = item['code']).first().ticker
-        date = item['reportDate']  # Giả sử bạn có thể trích xuất giá trị date từ item
-        source = item['firm']  # Giả sử bạn có thể trích xuất giá trị source từ item
-        recommendation = item['type']
-        if not FundamentalAnalysis.objects.filter(ticker=stock, date=date, source=source).exists():
-        # Nếu bản ghi không tồn tại, tạo mới
-            FundamentalAnalysis.objects.create(
-                ticker=stock,
-                date=date,
-                source=source,
-                target_price=item['target_price'],  # Giả sử bạn có thể trích xuất giá trị target_price từ item
-                recommendation = recommendation,
-            )
-        
+    return data_list
     
-def save_fa_raw():
-#FREEFLOAT,BETA,PRICE_TO_EARNINGS,PRICE_TO_BOOK,DIVIDEND_YIELD,BVPS_CR
+def shareholder_company(stock):
+    url = f"https://finfo-api.vndirect.com.vn/v4/shareholders?sort=ownershipPct:desc&q=code:{stock}Ư~ownershipPct:gte:5"
+    payload = {}
+    headers = {
+    'Accept': 'application/json, text/javascript, */*; q=0.01',
+    'Accept-Language': 'vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive',
+    'Content-Type': 'application/json',
+    'Origin': 'https://www.vndirect.com.vn',
+    'Pragma': 'no-cache',
+    'Referer': 'https://www.vndirect.com.vn/',
+    'Sec-Fetch-Dest': 'empty',
+    'Sec-Fetch-Mode': 'cors',
+    'Sec-Fetch-Site': 'same-site',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'sec-ch-ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+    'sec-ch-ua-mobile': '?0',
+    'sec-ch-ua-platform': '"Windows"'
+    }
 
-url = "https://finfo-api.vndirect.com.vn/v4/ratios/latest?filter=ratioCode:FREEFLOAT,BETA,PRICE_TO_EARNINGS,PRICE_TO_BOOK,DIVIDEND_YIELD,BVPS_CR,&where=code:VNM~reportDate:gt:2024-01-09&order=reportDate&fields=ratioCode,value"
+    response = requests.request("GET", url, headers=headers, data=payload)
+    data = response.text
+    data_dict = json.loads(data)
+    data_list = data_dict['data']
+    return data_list
 
-payload = {}
-headers = {
-  'Accept': 'application/json, text/javascript, */*; q=0.01',
-  'Accept-Language': 'vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7',
-  'Cache-Control': 'no-cache',
-  'Connection': 'keep-alive',
-  'Content-Type': 'application/json',
-  'Origin': 'https://www.vndirect.com.vn',
-  'Pragma': 'no-cache',
-  'Referer': 'https://www.vndirect.com.vn/',
-  'Sec-Fetch-Dest': 'empty',
-  'Sec-Fetch-Mode': 'cors',
-  'Sec-Fetch-Site': 'same-site',
-  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-  'sec-ch-ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
-  'sec-ch-ua-mobile': '?0',
-  'sec-ch-ua-platform': '"Windows"'
-}
+def save_fa_raw(stock):
+    # chỉ số cơ bản niêm yết
+    url = f"https://finfo-api.vndirect.com.vn/v4/ratios/latest?filter=ratioCode:MARKETCAP,NMVOLUME_AVG_CR_10D,PRICE_HIGHEST_CR_52W,PRICE_LOWEST_CR_52W,OUTSTANDING_SHARES,FREEFLOAT,BETA,PRICE_TO_EARNINGS,PRICE_TO_BOOK,DIVIDEND_YIELD,BVPS_CR,&where=code:{stock}~reportDate:gt:2024-02-03&order=reportDate&fields=ratioCode,value"
+    payload = {}
+    headers = {
+    'Accept': 'application/json, text/javascript, */*; q=0.01',
+    'Accept-Language': 'vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive',
+    'Content-Type': 'application/json',
+    'Origin': 'https://www.vndirect.com.vn',
+    'Pragma': 'no-cache',
+    'Referer': 'https://www.vndirect.com.vn/',
+    'Sec-Fetch-Dest': 'empty',
+    'Sec-Fetch-Mode': 'cors',
+    'Sec-Fetch-Site': 'same-site',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'sec-ch-ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+    'sec-ch-ua-mobile': '?0',
+    'sec-ch-ua-platform': '"Windows"'
+    }
+    response = requests.request("GET", url, headers=headers, data=payload)
+    data_list_1 = response.text
 
-response = requests.request("GET", url, headers=headers, data=payload)
-#ROAE_TR_AVG5Q,ROAA_TR_AVG5Q,EPS_TR,
-url = "https://finfo-api.vndirect.com.vn/v4/ratios/latest?filter=ratioCode:ROAE_TR_AVG5Q,ROAA_TR_AVG5Q,EPS_TR,&where=code:VNM~reportDate:gt:2023-10-11&order=reportDate&fields=ratioCode,value"
-
-payload = {}
-headers = {
-  'Accept': 'application/json, text/javascript, */*; q=0.01',
-  'Accept-Language': 'vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7',
-  'Cache-Control': 'no-cache',
-  'Connection': 'keep-alive',
-  'Content-Type': 'application/json',
-  'Origin': 'https://www.vndirect.com.vn',
-  'Pragma': 'no-cache',
-  'Referer': 'https://www.vndirect.com.vn/',
-  'Sec-Fetch-Dest': 'empty',
-  'Sec-Fetch-Mode': 'cors',
-  'Sec-Fetch-Site': 'same-site',
-  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-  'sec-ch-ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
-  'sec-ch-ua-mobile': '?0',
-  'sec-ch-ua-platform': '"Windows"'
-}
-
-response = requests.request("GET", url, headers=headers, data=payload)
-
-print(response.text)
-print(response.text)
-
-
-def dinhluongfa()
-    url = "https://finfo-api.vndirect.com.vn/v4/scorings/latest?order=fiscalDate&where=code:VNM~locale:VN~fiscalDate:lte:2024-01-21&filter=criteriaCode:102000,103000,101000,105000,104000,106000,100000,202000,203000,201000,205000,204000,206000,200000,102000,303000,301000,305000,104000,106000,300000,102000,503000,501000,505000,104000,106000,500000"
+    # chỉ số lợi nhuận
+    url = "https://finfo-api.vndirect.com.vn/v4/ratios/latest?filter=ratioCode:ROAE_TR_AVG5Q,ROAA_TR_AVG5Q,EPS_TR,&where=code:VNM~reportDate:gt:2023-11-05&order=reportDate&fields=ratioCode,value"
 
     payload = {}
     headers = {
@@ -489,4 +450,156 @@ def dinhluongfa()
 
     response = requests.request("GET", url, headers=headers, data=payload)
 
-    print(response.text)
+    data_list_2 = response.text
+
+    # chỉ số tăng trương so sánh
+
+def compare_ration_yearly()
+    # năm t-3
+    url = "https://finfo-api.vndirect.com.vn/v4/ratios?q=code:VNM~ratioCode:NET_SALES_TR_GRYOY,NET_PROFIT_TR_GRYOY,OPERATING_EBIT_TR_GRYOY,GROSS_MARGIN_TR,ROAA_TR_AVG5Q,ROAE_TR_AVG5Q,DEBT_TO_EQUITY_AQ,DIVIDEND_YIELD,CFO_TO_SALES_TR,INTEREST_COVERAGE_TR,CPS_AQ~reportDate:2020-12-31"
+
+    payload = {}
+    headers = {
+    'Accept': 'application/json, text/javascript, */*; q=0.01',
+    'Accept-Language': 'vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive',
+    'Content-Type': 'application/json',
+    'Origin': 'https://www.vndirect.com.vn',
+    'Pragma': 'no-cache',
+    'Referer': 'https://www.vndirect.com.vn/',
+    'Sec-Fetch-Dest': 'empty',
+    'Sec-Fetch-Mode': 'cors',
+    'Sec-Fetch-Site': 'same-site',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'sec-ch-ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+    'sec-ch-ua-mobile': '?0',
+    'sec-ch-ua-platform': '"Windows"'
+    }
+
+    response = requests.request("GET", url, headers=headers, data=payload)
+
+    data_list_1 = response.text
+
+    # Năm t-2
+    url = "https://finfo-api.vndirect.com.vn/v4/ratios?q=code:VNM~ratioCode:NET_SALES_TR_GRYOY,NET_PROFIT_TR_GRYOY,OPERATING_EBIT_TR_GRYOY,GROSS_MARGIN_TR,ROAA_TR_AVG5Q,ROAE_TR_AVG5Q,DEBT_TO_EQUITY_AQ,DIVIDEND_YIELD,CFO_TO_SALES_TR,INTEREST_COVERAGE_TR,CPS_AQ~reportDate:2021-12-31"
+
+    payload = {}
+    headers = {
+    'Accept': 'application/json, text/javascript, */*; q=0.01',
+    'Accept-Language': 'vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive',
+    'Content-Type': 'application/json',
+    'Origin': 'https://www.vndirect.com.vn',
+    'Pragma': 'no-cache',
+    'Referer': 'https://www.vndirect.com.vn/',
+    'Sec-Fetch-Dest': 'empty',
+    'Sec-Fetch-Mode': 'cors',
+    'Sec-Fetch-Site': 'same-site',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'sec-ch-ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+    'sec-ch-ua-mobile': '?0',
+    'sec-ch-ua-platform': '"Windows"'
+    }
+
+    response = requests.request("GET", url, headers=headers, data=payload)
+
+    data_list_2 = response.text
+
+
+    # năm t-1
+    url = "https://finfo-api.vndirect.com.vn/v4/ratios?q=code:VNM~ratioCode:NET_SALES_TR_GRYOY,NET_PROFIT_TR_GRYOY,OPERATING_EBIT_TR_GRYOY,GROSS_MARGIN_TR,ROAA_TR_AVG5Q,ROAE_TR_AVG5Q,DEBT_TO_EQUITY_AQ,DIVIDEND_YIELD,CFO_TO_SALES_TR,INTEREST_COVERAGE_TR,CPS_AQ~reportDate:2022-12-31"
+
+    payload = {}
+    headers = {
+    'Accept': 'application/json, text/javascript, */*; q=0.01',
+    'Accept-Language': 'vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive',
+    'Content-Type': 'application/json',
+    'Origin': 'https://www.vndirect.com.vn',
+    'Pragma': 'no-cache',
+    'Referer': 'https://www.vndirect.com.vn/',
+    'Sec-Fetch-Dest': 'empty',
+    'Sec-Fetch-Mode': 'cors',
+    'Sec-Fetch-Site': 'same-site',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'sec-ch-ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+    'sec-ch-ua-mobile': '?0',
+    'sec-ch-ua-platform': '"Windows"'
+    }
+
+    response = requests.request("GET", url, headers=headers, data=payload)
+
+    data_list_3 = response.text
+    # năm t
+    url = "https://finfo-api.vndirect.com.vn/v4/ratios?q=code:VNM~ratioCode:NET_SALES_TR_GRYOY,NET_PROFIT_TR_GRYOY,OPERATING_EBIT_TR_GRYOY,GROSS_MARGIN_TR,ROAA_TR_AVG5Q,ROAE_TR_AVG5Q,DEBT_TO_EQUITY_AQ,DIVIDEND_YIELD,CFO_TO_SALES_TR,INTEREST_COVERAGE_TR,CPS_AQ~reportDate:2023-12-31"
+
+    payload = {}
+    headers = {
+    'Accept': 'application/json, text/javascript, */*; q=0.01',
+    'Accept-Language': 'vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive',
+    'Content-Type': 'application/json',
+    'Origin': 'https://www.vndirect.com.vn',
+    'Pragma': 'no-cache',
+    'Referer': 'https://www.vndirect.com.vn/',
+    'Sec-Fetch-Dest': 'empty',
+    'Sec-Fetch-Mode': 'cors',
+    'Sec-Fetch-Site': 'same-site',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'sec-ch-ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+    'sec-ch-ua-mobile': '?0',
+    'sec-ch-ua-platform': '"Windows"'
+    }
+
+    response = requests.request("GET", url, headers=headers, data=payload)
+    data_list_4 = response.text
+
+
+    return 
+
+
+def financial_statements(stock,previous_year,quarter=True ):
+    if quarter ==True:
+        quarter=1
+    else:
+        quarter=0
+    year = datetime.now().year
+    type_report = {'balance_sheet': 1, 'income_statement': 2, 'direct_cash_flow_statement': 3, 'indirect_cash_flow_statement': 4}
+    financial_statements = []
+    for report_type, report_number in type_report.items():
+        report = {}
+        url = f"https://www.bsc.com.vn/api/Data/Finance/LastestFinancialReports?symbol={stock}&type={report_number}&year={year}&quarter={quarter}&count={previous_year}"
+        payload = {}
+        headers = {
+        'Accept': 'application/json, text/javascript, */*; q=0.01',
+        'Accept-Language': 'vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+        'Content-Type': 'application/json',
+        'Origin': 'https://www.vndirect.com.vn',
+        'Pragma': 'no-cache',
+        'Referer': 'https://www.vndirect.com.vn/',
+        'Sec-Fetch-Dest': 'empty',
+        'Sec-Fetch-Mode': 'cors',
+        'Sec-Fetch-Site': 'same-site',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'sec-ch-ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+        'sec-ch-ua-mobile': '?0',
+        'sec-ch-ua-platform': '"Windows"',
+        'Cookie': 'NSC_XfcTfswfs_443=ffffffff091da14845525d5f4f58455e445a4a42378b'
+        }
+        response = requests.request("GET", url, headers=headers, data=payload)
+        data = {report_type: response.text}
+        financial_statements.append(data)
+        return financial_statements
+
+
+
+https://www.bsc.com.vn/api/Data/Finance/LastestFinancialReports?symbol=VNM&type=1&year=2024&quarter=1&count=5
+
+
+https://www.bsc.com.vn/api/Data/Finance/LastestFinancialReports?symbol=VNM&type=1&year=2024&quarter=1&count=5
