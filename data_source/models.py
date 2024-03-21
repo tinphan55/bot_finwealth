@@ -177,7 +177,20 @@ class StockValuation(models.Model):
 
     def __str__(self):
         return self.ticker.ticker
+    
 
+class StockRatioData(models.Model):
+    ticker = models.ForeignKey(StockOverview,on_delete=models.CASCADE,verbose_name = 'Cổ phiếu' )
+    group = models.CharField(max_length=100)
+    report_date = models.DateField()
+    item_code = models.CharField(max_length=100)
+    ratio_code = models.CharField(max_length=100)
+    item_name = models.CharField(max_length=255)
+    value = models.FloatField()
+
+    def __str__(self):
+        return self.ticker.ticker
+    
 class FundamentalAnalysisReport(models.Model):
     name = models.CharField(max_length=100, blank=True,null=True, verbose_name='Tên báo cáo')
     source = models.CharField(max_length=100, blank=True, verbose_name='Nguồn')

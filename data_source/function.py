@@ -399,10 +399,8 @@ def save_fa_raw(stock):
     return data
     
 
-def compare_ration_yearly():
-    # năm t-3
-    url = "https://finfo-api.vndirect.com.vn/v4/ratios?q=code:VNM~ratioCode:NET_SALES_TR_GRYOY,NET_PROFIT_TR_GRYOY,OPERATING_EBIT_TR_GRYOY,GROSS_MARGIN_TR,ROAA_TR_AVG5Q,ROAE_TR_AVG5Q,DEBT_TO_EQUITY_AQ,DIVIDEND_YIELD,CFO_TO_SALES_TR,INTEREST_COVERAGE_TR,CPS_AQ~reportDate:2020-12-31"
-
+def compare_ratio_yearly(year):
+    url = f"https://finfo-api.vndirect.com.vn/v4/ratios?q=code:VNM~ratioCode:NET_SALES_TR_GRYOY,NET_PROFIT_TR_GRYOY,OPERATING_EBIT_TR_GRYOY,GROSS_MARGIN_TR,ROAA_TR_AVG5Q,ROAE_TR_AVG5Q,DEBT_TO_EQUITY_AQ,DIVIDEND_YIELD,CFO_TO_SALES_TR,INTEREST_COVERAGE_TR,CPS_AQ~reportDate:{year}-12-31"
     payload = {}
     headers = {
     'Accept': 'application/json, text/javascript, */*; q=0.01',
@@ -421,90 +419,10 @@ def compare_ration_yearly():
     'sec-ch-ua-mobile': '?0',
     'sec-ch-ua-platform': '"Windows"'
     }
-
     response = requests.request("GET", url, headers=headers, data=payload)
-
-    data_list_1 = response.text
-
-    # Năm t-2
-    url = "https://finfo-api.vndirect.com.vn/v4/ratios?q=code:VNM~ratioCode:NET_SALES_TR_GRYOY,NET_PROFIT_TR_GRYOY,OPERATING_EBIT_TR_GRYOY,GROSS_MARGIN_TR,ROAA_TR_AVG5Q,ROAE_TR_AVG5Q,DEBT_TO_EQUITY_AQ,DIVIDEND_YIELD,CFO_TO_SALES_TR,INTEREST_COVERAGE_TR,CPS_AQ~reportDate:2021-12-31"
-
-    payload = {}
-    headers = {
-    'Accept': 'application/json, text/javascript, */*; q=0.01',
-    'Accept-Language': 'vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7',
-    'Cache-Control': 'no-cache',
-    'Connection': 'keep-alive',
-    'Content-Type': 'application/json',
-    'Origin': 'https://www.vndirect.com.vn',
-    'Pragma': 'no-cache',
-    'Referer': 'https://www.vndirect.com.vn/',
-    'Sec-Fetch-Dest': 'empty',
-    'Sec-Fetch-Mode': 'cors',
-    'Sec-Fetch-Site': 'same-site',
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-    'sec-ch-ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
-    'sec-ch-ua-mobile': '?0',
-    'sec-ch-ua-platform': '"Windows"'
-    }
-
-    response = requests.request("GET", url, headers=headers, data=payload)
-
-    data_list_2 = response.text
-
-
-    # năm t-1
-    url = "https://finfo-api.vndirect.com.vn/v4/ratios?q=code:VNM~ratioCode:NET_SALES_TR_GRYOY,NET_PROFIT_TR_GRYOY,OPERATING_EBIT_TR_GRYOY,GROSS_MARGIN_TR,ROAA_TR_AVG5Q,ROAE_TR_AVG5Q,DEBT_TO_EQUITY_AQ,DIVIDEND_YIELD,CFO_TO_SALES_TR,INTEREST_COVERAGE_TR,CPS_AQ~reportDate:2022-12-31"
-
-    payload = {}
-    headers = {
-    'Accept': 'application/json, text/javascript, */*; q=0.01',
-    'Accept-Language': 'vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7',
-    'Cache-Control': 'no-cache',
-    'Connection': 'keep-alive',
-    'Content-Type': 'application/json',
-    'Origin': 'https://www.vndirect.com.vn',
-    'Pragma': 'no-cache',
-    'Referer': 'https://www.vndirect.com.vn/',
-    'Sec-Fetch-Dest': 'empty',
-    'Sec-Fetch-Mode': 'cors',
-    'Sec-Fetch-Site': 'same-site',
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-    'sec-ch-ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
-    'sec-ch-ua-mobile': '?0',
-    'sec-ch-ua-platform': '"Windows"'
-    }
-
-    response = requests.request("GET", url, headers=headers, data=payload)
-
-    data_list_3 = response.text
-    # năm t
-    url = "https://finfo-api.vndirect.com.vn/v4/ratios?q=code:VNM~ratioCode:NET_SALES_TR_GRYOY,NET_PROFIT_TR_GRYOY,OPERATING_EBIT_TR_GRYOY,GROSS_MARGIN_TR,ROAA_TR_AVG5Q,ROAE_TR_AVG5Q,DEBT_TO_EQUITY_AQ,DIVIDEND_YIELD,CFO_TO_SALES_TR,INTEREST_COVERAGE_TR,CPS_AQ~reportDate:2023-12-31"
-
-    payload = {}
-    headers = {
-    'Accept': 'application/json, text/javascript, */*; q=0.01',
-    'Accept-Language': 'vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7',
-    'Cache-Control': 'no-cache',
-    'Connection': 'keep-alive',
-    'Content-Type': 'application/json',
-    'Origin': 'https://www.vndirect.com.vn',
-    'Pragma': 'no-cache',
-    'Referer': 'https://www.vndirect.com.vn/',
-    'Sec-Fetch-Dest': 'empty',
-    'Sec-Fetch-Mode': 'cors',
-    'Sec-Fetch-Site': 'same-site',
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-    'sec-ch-ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
-    'sec-ch-ua-mobile': '?0',
-    'sec-ch-ua-platform': '"Windows"'
-    }
-
-    response = requests.request("GET", url, headers=headers, data=payload)
-    data_list_4 = response.text
-
-
-    return 
+    data_list = response.text
+    data = return_json_data(data_list)
+    return data
 
 
 def financial_statements(stock,previous_year,quarter=True ):
@@ -568,74 +486,75 @@ def financial_statements(stock,previous_year,quarter=True ):
 
 
 
+#chạy 1 tháng 1 lần
+def process_data_list():
+    date = datetime.now().date() - timedelta(days=7)
+    list_stock = StockPriceFilter.objects.filter(date=date)
+    for item in list_stock:    
+        data = shareholder_company(item.ticker)
+        for object in data:
+            try:
+                ticker = StockOverview.objects.get(ticker=item.ticker)
+                shareholder_name = object['shareholderName']
+                role_type = object['roleType']
+                number_of_shares = object['numberOfShares']
+                ownership_pct = object['ownershipPct']
+                effective_date = datetime.strptime(object['effectiveDate'], '%Y-%m-%d').date()
+                stock_shareholder, created = StockShareholder.objects.get_or_create(
+                    ticker=ticker,
+                    shareholder_name=shareholder_name,
+                    defaults={
+                        'role_type': role_type,
+                        'number_of_shares': number_of_shares,
+                        'ownership_pct': ownership_pct,
+                        'effective_date': effective_date
+                    }
+                )
+                if not created:
+                    # Nếu đã tồn tại, cập nhật các trường dữ liệu
+                    stock_shareholder.role_type = role_type
+                    stock_shareholder.number_of_shares = number_of_shares
+                    stock_shareholder.ownership_pct = ownership_pct
+                    stock_shareholder.effective_date = effective_date
+                    stock_shareholder.save()
+            except Exception as e:
+                print(f"Lỗi xảy ra khi lưu giá trị: {data}. Lỗi: {str(e)}")
+        data_list  =save_valuation_stock_company(item.ticker,days=360)
+        for data in data_list:
+            try:
+                print(item.ticker)
+                ticker = StockOverview.objects.get(ticker=data['code'])
+                firm = data['firm']
+                type = data['type']
+                report_date = datetime.strptime(data['reportDate'], '%Y-%m-%d').date()
+                source = data['source']
+                report_price = data['reportPrice']
+                target_price = data['targetPrice']
+                stock_valuation, created = StockValuation.objects.get_or_create(
+                    ticker=ticker,
+                    firm=firm,
+                    report_date=report_date,
+                    defaults={
+                        'source': source,
+                        'report_price': report_price,
+                        'target_price': target_price
+                    }
+                )
+                if not created:
+                    # Nếu đã tồn tại, cập nhật các trường dữ liệu
+                    stock_valuation.source = source
+                    stock_valuation.report_price = report_price
+                    stock_valuation.target_price = target_price
+                    stock_valuation.save()
+            except Exception as e:
+                print(f"Lỗi xảy ra khi lưu giá trị: {data}. Lỗi: {str(e)}")
+        time.sleep(30)
 
-# def process_data_list():
-#     date = datetime.now().date() - timedelta(days=7)
-#     list_stock = StockPriceFilter.objects.filter(date=date)
-#     for item in list_stock:    
-#         data = shareholder_company(item.ticker)
-#         for object in data:
-#             try:
-#                 ticker = StockOverview.objects.get(ticker=item.ticker)
-#                 shareholder_name = object['shareholderName']
-#                 role_type = object['roleType']
-#                 number_of_shares = object['numberOfShares']
-#                 ownership_pct = object['ownershipPct']
-#                 effective_date = datetime.strptime(object['effectiveDate'], '%Y-%m-%d').date()
-#                 stock_shareholder, created = StockShareholder.objects.get_or_create(
-#                     ticker=ticker,
-#                     shareholder_name=shareholder_name,
-#                     defaults={
-#                         'role_type': role_type,
-#                         'number_of_shares': number_of_shares,
-#                         'ownership_pct': ownership_pct,
-#                         'effective_date': effective_date
-#                     }
-#                 )
-#                 if not created:
-#                     # Nếu đã tồn tại, cập nhật các trường dữ liệu
-#                     stock_shareholder.role_type = role_type
-#                     stock_shareholder.number_of_shares = number_of_shares
-#                     stock_shareholder.ownership_pct = ownership_pct
-#                     stock_shareholder.effective_date = effective_date
-#                     stock_shareholder.save()
-#             except Exception as e:
-#                 print(f"Lỗi xảy ra khi lưu giá trị: {data}. Lỗi: {str(e)}")
-#         data_list  =save_valuation_stock_company(item.ticker,days=360)
-#         for data in data_list:
-#             try:
-#                 print(item.ticker)
-#                 ticker = StockOverview.objects.get(ticker=data['code'])
-#                 firm = data['firm']
-#                 type = data['type']
-#                 report_date = datetime.strptime(data['reportDate'], '%Y-%m-%d').date()
-#                 source = data['source']
-#                 report_price = data['reportPrice']
-#                 target_price = data['targetPrice']
-#                 stock_valuation, created = StockValuation.objects.get_or_create(
-#                     ticker=ticker,
-#                     firm=firm,
-#                     report_date=report_date,
-#                     defaults={
-#                         'source': source,
-#                         'report_price': report_price,
-#                         'target_price': target_price
-#                     }
-#                 )
-#                 if not created:
-#                     # Nếu đã tồn tại, cập nhật các trường dữ liệu
-#                     stock_valuation.source = source
-#                     stock_valuation.report_price = report_price
-#                     stock_valuation.target_price = target_price
-#                     stock_valuation.save()
-#             except Exception as e:
-#                 print(f"Lỗi xảy ra khi lưu giá trị: {data}. Lỗi: {str(e)}")
-#         time.sleep(30)
 
-# import schedule
-# import time
 import time
 
+
+#Chạy 1 ngày 1 lần
 def update_tbstockoverviewdatatrading():
     list_stock = StockOverview.objects.all()
     for item in list_stock:
@@ -677,4 +596,21 @@ def update_tbstockoverviewdatatrading():
         except Exception as e:
             print(f"Error processing {item.ticker}: {e}")
             continue
-
+        
+def update_stockdataratio_yearly():
+    list_stock = StockOverview.objects.all()
+    for object in list_stock:
+        list_year = ['2020', '2021', '2022', '2023']
+        for year in list_year:
+            data = compare_ratio_yearly(year)
+            ticker = StockOverview.objects.get(ticker=object.ticker)
+            for item in data:
+                try:
+                    report_date = item.get('report_date')
+                    stock_data, created = StockRatioData.objects.get_or_create(ticker=ticker, report_date=report_date, defaults=item)
+                    if not created:
+                        # Bản ghi đã tồn tại, bạn có thể thực hiện các thao tác khác tại đây
+                        pass
+                except Exception as e:
+                    # Xử lý lỗi ở đây, hoặc bỏ qua lỗi và tiếp tục vòng lặp
+                    pass
