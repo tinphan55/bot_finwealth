@@ -661,10 +661,14 @@ def update_tbstockoverviewdatatrading():
                 'EPS_TR': 'eps_tr'
             }
             # Iterate over the data and populate the defaults dictionary
-            for item in data:
-                field_name = field_mapping.get(item['ratioCode'])
-                if field_name:
-                    defaults[field_name] = item['value']
+            for record in data:
+                field_name = field_mapping.get(record['ratioCode'])
+                if field_name is not None and record.get('value') is not None:
+                    defaults[field_name] = record['value']
+                else:
+                    for key, value in record.items():
+                        defaults[key.lower()] = 0
+
             obj, created = StockOverviewDataTrading.objects.update_or_create(
                 ticker=stock_overview,
                 defaults=defaults
@@ -673,3 +677,4 @@ def update_tbstockoverviewdatatrading():
         except Exception as e:
             print(f"Error processing {item.ticker}: {e}")
             continue
+
