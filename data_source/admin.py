@@ -20,6 +20,8 @@ class FundamentalAnalysisReportAdmin(admin.ModelAdmin):
             'fields': ('date', 'tags', 'file', 'source', 'valuation')
         }),
     )
+    search_fields = ['get_report_tags',]
+
     def get_report_tags(self, obj):
         return ", ".join([str(tag) for tag in obj.tags.all()])  # Đổi obj.tags thành obj.tags.all()
     get_report_tags.short_description = 'Tags'  # Điều này sẽ hiển thị 'Tags' như tiêu đề của cột

@@ -153,7 +153,7 @@ class StockOverviewDataTrading(models.Model):
     roae_tr_avg5q = models.FloatField(verbose_name='ROAE TR AVG5Q')
     roaa_tr_avg5q = models.FloatField(verbose_name='ROAA TR AVG5Q')
     eps_tr = models.FloatField(verbose_name='EPS TR')
-    avg_target_price = models.FloatField(verbose_name='avg_target_price')
+    avg_target_price = models.FloatField(default =0,verbose_name='avg_target_price')
 
     def __str__(self):
         return self.ticker
@@ -164,7 +164,7 @@ class StockOverviewDataTrading(models.Model):
         verbose_name_plural = 'Dữ liệu cơ bản'
 
     def __str__(self):
-        return self.ticker
+        return self.ticker.ticker
     
 class StockValuation(models.Model):
     ticker = models.ForeignKey(StockOverview,on_delete=models.CASCADE,verbose_name = 'Cổ phiếu' )

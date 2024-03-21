@@ -634,4 +634,36 @@ def financial_statements(stock,previous_year,quarter=True ):
 
 # import schedule
 # import time
-
+def update_tbstockoverviewdatatrading ():
+    list_stock = StockOverview.objects.all()
+    for item in list_stock:    
+        stock_overview = StockOverview.objects.get(ticker = item.ticker)
+        data =save_fa_raw(item.ticker)
+        defaults = {}
+        # Map ratioCode to the corresponding field name in the model
+        field_mapping = {
+            'MARKETCAP': 'marketcap',
+            'NMVOLUME_AVG_CR_10D': 'volume_avg_cr_10d',
+            'PRICE_HIGHEST_CR_52W': 'price_highest_cr_52w',
+            'PRICE_LOWEST_CR_52W': 'price_lowest_cr_52w',
+            'OUTSTANDING_SHARES': 'outstanding_shares',
+            'FREEFLOAT': 'freefloat',
+            'BETA': 'beta',
+            'PRICE_TO_EARNINGS': 'price_to_earnings',
+            'PRICE_TO_BOOK': 'price_to_book',
+            'DIVIDEND_YIELD': 'dividend_yield',
+            'BVPS_CR': 'bvps_cr',
+            'ROAE_TR_AVG5Q': 'roae_tr_avg5q',
+            'ROAA_TR_AVG5Q': 'roaa_tr_avg5q',
+            'EPS_TR': 'eps_tr'
+        }
+        # Iterate over the data and populate the defaults dictionary
+        for item in data:
+            field_name = field_mapping.get(item['ratioCode'])
+            if field_name:
+                defaults[field_name] = item['value']
+        obj, created = StockOverviewDataTrading.objects.update_or_create(
+            ticker=stock_overview,
+            defaults=defaults
+        )
+        time.sleep(30)
