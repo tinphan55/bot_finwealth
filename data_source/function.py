@@ -370,7 +370,8 @@ def shareholder_company(stock):
 
 def save_fa_raw(stock):
     # chỉ số cơ bản niêm yết
-    url = f"https://finfo-api.vndirect.com.vn/v4/ratios/latest?filter=ratioCode:MARKETCAP,NMVOLUME_AVG_CR_10D,PRICE_HIGHEST_CR_52W,PRICE_LOWEST_CR_52W,OUTSTANDING_SHARES,FREEFLOAT,BETA,PRICE_TO_EARNINGS,PRICE_TO_BOOK,DIVIDEND_YIELD,BVPS_CR,&where=code:{stock}~reportDate:gt:2024-02-03&order=reportDate&fields=ratioCode,value"
+    date = (datetime.now()- timedelta(days=1)).strftime('%Y-%m-%d')
+    url = f"https://finfo-api.vndirect.com.vn/v4/ratios/latest?filter=ratioCode:MARKETCAP,NMVOLUME_AVG_CR_10D,PRICE_HIGHEST_CR_52W,PRICE_LOWEST_CR_52W,OUTSTANDING_SHARES,FREEFLOAT,BETA,PRICE_TO_EARNINGS,PRICE_TO_BOOK,DIVIDEND_YIELD,BVPS_CR,&where=code:{stock}~reportDate:gt:{date}&order=reportDate&fields=ratioCode,value"
     payload = {}
     headers = {
     'Accept': 'application/json, text/javascript, */*; q=0.01',
@@ -392,7 +393,7 @@ def save_fa_raw(stock):
     response = requests.request("GET", url, headers=headers, data=payload)
     data1 =return_json_data(response.text)
     # chỉ số lợi nhuận
-    url = "https://finfo-api.vndirect.com.vn/v4/ratios/latest?filter=ratioCode:ROAE_TR_AVG5Q,ROAA_TR_AVG5Q,EPS_TR,&where=code:VNM~reportDate:gt:2023-11-05&order=reportDate&fields=ratioCode,value"
+    url = f"https://finfo-api.vndirect.com.vn/v4/ratios/latest?filter=ratioCode:ROAE_TR_AVG5Q,ROAA_TR_AVG5Q,EPS_TR,&where=code:{stock}~reportDate:gt:2023-11-05&order=reportDate&fields=ratioCode,value"
     response = requests.request("GET", url, headers=headers, data=payload)
     data2 = return_json_data(response.text)
     data =data1 + data2
