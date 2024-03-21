@@ -33,3 +33,18 @@ class FundamentalAnalysisReportAdmin(admin.ModelAdmin):
 admin.site.register(FundamentalAnalysisReport,FundamentalAnalysisReportAdmin)
 admin.site.register(Tag)
 admin.site.register(News)
+
+
+@admin.register(StockOverview)
+class StockOverviewAdmin(admin.ModelAdmin):
+    list_display = ('ticker', 'name', 'price')
+    search_fields =('ticker',)
+
+@admin.register(StockShareholder)
+class StockShareholderAdmin(admin.ModelAdmin):
+    list_display = ('ticker', 'shareholder_name', 'role_type', 'number_of_shares', 'ownership_pct', 'effective_date')
+    search_fields =('ticker',)
+@admin.register(StockValuation)
+class StockValuationAdmin(admin.ModelAdmin):
+    list_display = ('ticker', 'firm', 'report_date', 'source', 'report_price', 'target_price')
+    search_fields =('ticker',)
