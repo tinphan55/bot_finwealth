@@ -156,7 +156,7 @@ class StockOverviewDataTrading(models.Model):
     avg_target_price = models.FloatField(default=0, verbose_name='avg_target_price')
 
     def __str__(self):
-        return self.ticker
+        return self.ticker.ticker
 
 
     class Meta:
