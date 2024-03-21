@@ -122,6 +122,8 @@ class StockOverview(models.Model):
     stock_exchange = models.CharField(max_length=400,verbose_name='Sàn niêm yết')
     listed_date= models.DateField(verbose_name='Ngày niêm yết')
     introduce = models.TextField(null=True,blank=True,verbose_name='Giới thiệu')
+    def __str__(self):
+        return self.ticker
     
 class StockShareholder(models.Model):
     ticker = models.ForeignKey(StockOverview,on_delete=models.CASCADE,verbose_name = 'Cổ phiếu' )
@@ -132,7 +134,7 @@ class StockShareholder(models.Model):
     effective_date = models.DateField()
 
     def __str__(self):
-        return self.shareholder_name
+        return self.ticker.ticker
   
 
 class StockOverviewDataTrading(models.Model):
@@ -174,7 +176,7 @@ class StockValuation(models.Model):
     target_price = models.FloatField()
 
     def __str__(self):
-        return self.ticker
+        return self.ticker.ticker
 
 class FundamentalAnalysisReport(models.Model):
     name = models.CharField(max_length=100, blank=True,null=True, verbose_name='Tên báo cáo')
@@ -227,7 +229,7 @@ def create_report_segment(sender, instance, created, **kwargs):
             segment.save()
      
 class News(models.Model):
-    username = models.CharField(max_length=100, verbose_name='Người chia sẽ')
+    username = models.CharField(max_length=100,null=True, blank=True, verbose_name='Người chia sẽ')
     source = models.CharField(max_length=100, blank=True, verbose_name='Nguồn')
     modified_date = models.DateTimeField(auto_now=True ,verbose_name='Ngày tạo')
     tags = models.CharField(max_length=100, blank=True, verbose_name='Cổ phiếu')

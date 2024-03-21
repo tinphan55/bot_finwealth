@@ -43,8 +43,8 @@ class StockOverviewAdmin(admin.ModelAdmin):
 @admin.register(StockShareholder)
 class StockShareholderAdmin(admin.ModelAdmin):
     list_display = ('ticker', 'shareholder_name', 'role_type', 'number_of_shares', 'ownership_pct', 'effective_date')
-    search_fields =('ticker',)
+    search_fields =('ticker__ticker',)
 @admin.register(StockValuation)
 class StockValuationAdmin(admin.ModelAdmin):
     list_display = ('ticker', 'firm', 'report_date', 'source', 'report_price', 'target_price')
-    search_fields =('ticker',)
+    search_fields =('ticker__ticker',)
