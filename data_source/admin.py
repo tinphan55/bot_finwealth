@@ -37,7 +37,7 @@ admin.site.register(News)
 
 @admin.register(StockOverview)
 class StockOverviewAdmin(admin.ModelAdmin):
-    list_display = ('ticker', 'name', 'price')
+    list_display = ('ticker', 'company_name', 'stock_exchange','listed_date')
     search_fields =('ticker',)
 
 @admin.register(StockShareholder)
