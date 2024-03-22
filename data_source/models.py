@@ -192,8 +192,17 @@ class StockOverviewDataTrading(models.Model):
 
 @receiver(post_save, sender=StockPriceFilter)
 def save_model_stockoverviewdatatrading(sender, instance, created, **kwargs):
-    self = StockOverviewDataTrading.objects.get(ticker__ticker = instance.ticker)
-    self.save()
+    try:
+        stock_overview_data_trading = StockOverviewDataTrading.objects.get(ticker__ticker=instance.ticker)
+        # Update existing instance
+        # stock_overview_data_trading.some_field = instance.some_value
+        stock_overview_data_trading.save()
+    except StockOverviewDataTrading.DoesNotExist:
+        # Create new instance if not found
+        stock_overview_data_trading = StockOverviewDataTrading.objects.create(ticker__ticker=instance.ticker)
+        # Set other fields if necessary
+        # stock_overview_data_trading.some_field = instance.some_value
+        stock_overview_data_trading.save()
     
 class StockValuation(models.Model):
     ticker = models.ForeignKey(StockOverview,on_delete=models.CASCADE,verbose_name = 'Cổ phiếu' )
