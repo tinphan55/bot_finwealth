@@ -188,7 +188,7 @@ class StockOverviewDataTrading(models.Model):
 
 @receiver(post_save, sender=StockPriceFilter)
 def save_model_stockoverviewdatatrading(sender, instance, created, **kwargs):
-    self = StockOverviewDataTrading.objects.filter(ticker__ticker = instance.ticker)
+    self = StockOverviewDataTrading.objects.get(ticker__ticker = instance.ticker)
     self.save()
     
 class StockValuation(models.Model):
