@@ -52,11 +52,11 @@ class StockValuationAdmin(admin.ModelAdmin):
     search_fields =('ticker__ticker',)
 
 class StockOverviewDataTradingAdmin(admin.ModelAdmin):
-    list_display = ('ticker', 'marketcap', 'volume_avg_cr_10d', 'price_highest_cr_52w', 'price_lowest_cr_52w', 'outstanding_shares', 'freefloat', 'beta', 'price_to_earnings', 'price_to_book', 'dividend_yield', 'bvps_cr', 'roae_tr_avg5q', 'roaa_tr_avg5q', 'eps_tr', 'avg_target_price')
+    list_display = ('ticker','price', 'marketcap', 'volume_avg_cr_10d', 'price_highest_cr_52w', 'price_lowest_cr_52w', 'outstanding_shares', 'freefloat', 'beta', 'price_to_earnings', 'price_to_book', 'dividend_yield', 'bvps_cr', 'roae_tr_avg5q', 'roaa_tr_avg5q', 'eps_tr', 'avg_target_price')
     search_fields =('ticker__ticker',)
 admin.site.register(StockOverviewDataTrading, StockOverviewDataTradingAdmin)
 
 class StockRatioDataAdmin(admin.ModelAdmin):
-       list_display = ('ticker', 'group', 'report_date', 'item_name', 'value')
+       list_display = ('ticker','report_date', 'item_name', 'value')
    
 admin.site.register(StockRatioData, StockRatioDataAdmin)

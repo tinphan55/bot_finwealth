@@ -169,14 +169,14 @@ class StockOverviewDataTrading(models.Model):
         # Calculate checksum and save the object
         self.price = StockPriceFilter.objects.filter(ticker = self.ticker).order_by('-date').first().close
         self.marketcap = self.outstanding_shares*self.price
-        self.price_to_earnings = self.price/self.eps_tr 
-        self.price_to_book = self.price/self.bvps_cr
+        self.price_to_earnings = round(self.price/self.eps_tr ,3)
+        self.price_to_book = round(self.price/self.bvps_cr,3)
         self.price_highest_cr_52w = StockPriceFilter.objects.aggregate(max_close=Max('close'))['max_close']
         self.price_lowest_cr_52w  = StockPriceFilter.objects.aggregate(min_close=Min('close'))['min_close']
-        self.volume_avg_cr_10d = StockPriceFilter.objects.order_by('-date_time')[:10].aggregate(avg_volume_10=Avg('volume'))['avg_volume_10']
-        self.volume_avg_cr_20d = StockPriceFilter.objects.order_by('-date_time')[:20].aggregate(avg_volume_20=Avg('volume'))['avg_volume_20']
-        self.volume_avg_cr_50d = StockPriceFilter.objects.order_by('-date_time')[:50].aggregate(avg_volume_50=Avg('volume'))['avg_volume_50']
-        self.volume_avg_cr_200d = StockPriceFilter.objects.order_by('-date_time')[:200].aggregate(avg_volume_200=Avg('volume'))['avg_volume_200']
+        self.volume_avg_cr_10d = round(StockPriceFilter.objects.order_by('-date_time')[:10].aggregate(avg_volume_10=Avg('volume'))['avg_volume_10'],3)
+        self.volume_avg_cr_20d = round(StockPriceFilter.objects.order_by('-date_time')[:20].aggregate(avg_volume_20=Avg('volume'))['avg_volume_20'],3)
+        self.volume_avg_cr_50d = round(StockPriceFilter.objects.order_by('-date_time')[:50].aggregate(avg_volume_50=Avg('volume'))['avg_volume_50'],3)
+        self.volume_avg_cr_200d = round(StockPriceFilter.objects.order_by('-date_time')[:200].aggregate(avg_volume_200=Avg('volume'))['avg_volume_200'],3)
         super(StockOverviewDataTrading, self).save(*args, **kwargs)
     
     class Meta:
