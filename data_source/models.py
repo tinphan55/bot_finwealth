@@ -169,8 +169,10 @@ class StockOverviewDataTrading(models.Model):
         # Calculate checksum and save the object
         self.price = StockPriceFilter.objects.filter(ticker = self.ticker).order_by('-date').first().close
         self.marketcap = self.outstanding_shares*self.price
-        self.price_to_earnings = round(self.price/self.eps_tr ,3)
-        self.price_to_book = round(self.price/self.bvps_cr,3)
+        if self.eps_tr:
+            self.price_to_earnings = round(self.price/self.eps_tr ,3)
+        if self.bvps_cr:
+            self.price_to_book = round(self.price/self.bvps_cr,3)
         self.price_highest_cr_52w = StockPriceFilter.objects.aggregate(max_close=Max('close'))['max_close']
         self.price_lowest_cr_52w  = StockPriceFilter.objects.aggregate(min_close=Min('close'))['min_close']
         self.volume_avg_cr_10d = round(StockPriceFilter.objects.order_by('-date_time')[:10].aggregate(avg_volume_10=Avg('volume'))['avg_volume_10'],3)
