@@ -161,7 +161,7 @@ class StockOverviewDataTrading(models.Model):
     roaa_tr_avg5q = models.FloatField(default=0, verbose_name='ROAA TR AVG5Q')
     eps_tr = models.FloatField(default=0, verbose_name='EPS TR')
     avg_target_price = models.FloatField(default=0, verbose_name='avg_target_price')
-
+    up_size = models.FloatField(default=0, verbose_name='up size')
     def __str__(self):
         return self.ticker.ticker
 
@@ -173,14 +173,16 @@ class StockOverviewDataTrading(models.Model):
             self.price_to_earnings = round(self.price/self.eps_tr ,3)
         if self.bvps_cr:
             self.price_to_book = round(self.price/self.bvps_cr,3)
-        self.price_highest_cr_52w = StockPriceFilter.objects.aggregate(max_close=Max('close'))['max_close']
-        self.price_lowest_cr_52w  = StockPriceFilter.objects.aggregate(min_close=Min('close'))['min_close']
-        self.volume_avg_cr_10d = round(StockPriceFilter.objects.order_by('-date_time')[:10].aggregate(avg_volume_10=Avg('volume'))['avg_volume_10'],3)
-        self.volume_avg_cr_20d = round(StockPriceFilter.objects.order_by('-date_time')[:20].aggregate(avg_volume_20=Avg('volume'))['avg_volume_20'],3)
-        self.volume_avg_cr_50d = round(StockPriceFilter.objects.order_by('-date_time')[:50].aggregate(avg_volume_50=Avg('volume'))['avg_volume_50'],3)
-        self.volume_avg_cr_200d = round(StockPriceFilter.objects.order_by('-date_time')[:200].aggregate(avg_volume_200=Avg('volume'))['avg_volume_200'],3)
+        self.price_highest_cr_52w = StockPriceFilter.objects.filter(ticker =self.ticker).aggregate(max_close=Max('close'))['max_close']
+        self.price_lowest_cr_52w  = StockPriceFilter.objects.filter(ticker =self.ticker).aggregate(min_close=Min('close'))['min_close']
+        self.volume_avg_cr_10d = round(StockPriceFilter.objects.filter(ticker =self.ticker).order_by('-date_time')[:10].aggregate(avg_volume_10=Avg('volume'))['avg_volume_10'],3)
+        self.volume_avg_cr_20d = round(StockPriceFilter.objects.filter(ticker =self.ticker).order_by('-date_time')[:20].aggregate(avg_volume_20=Avg('volume'))['avg_volume_20'],3)
+        self.volume_avg_cr_50d = round(StockPriceFilter.objects.filter(ticker =self.ticker).order_by('-date_time')[:50].aggregate(avg_volume_50=Avg('volume'))['avg_volume_50'],3)
+        self.volume_avg_cr_200d = round(StockPriceFilter.objects.filter(ticker =self.ticker).order_by('-date_time')[:200].aggregate(avg_volume_200=Avg('volume'))['avg_volume_200'],3)
         valuation = StockValuation.objects.filter(ticker__ticker = self.ticker)
         self.avg_target_price  = round(valuation.aggregate(avg_target_price=Avg('target_price'))['avg_target_price'],3)
+        if self.avg_target_price:
+            self.up_size = round(self.price/self.avg_target_price -1)
         super(StockOverviewDataTrading, self).save(*args, **kwargs)
     
     class Meta:

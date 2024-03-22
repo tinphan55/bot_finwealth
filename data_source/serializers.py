@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import *
+from signal_bots.models import *
 
 class FundamentalAnalysisReportSegmentSerializer(serializers.ModelSerializer):
     date = serializers.DateField(source='report.date')
@@ -51,4 +52,15 @@ class StockRatioDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = StockRatioData
         exclude = ['id',]
+
+class StockPriceFilterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StockPriceFilter
+        exclude = ['id','date_time',]
+
+class SignalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model= Signal
+        fields =  ['ticker','signal','close','take_profit_price','ratio_cutloss','strategy','market_price']
+
     

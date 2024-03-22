@@ -14,4 +14,7 @@ urlpatterns = [
     path('api/stock-valuation/<str:ticker>/', StockValuationListAPIView.as_view(), name='stock_valuation_list'),
     path('api/stock-data-trading/<str:ticker>/', StockOverviewDataTradingListAPIView.as_view(), name='stock_data_trading'),
     path('api/stock-ratio-data/<str:ticker>/', StockRatioDataListAPIView.as_view(), name='stock_ratio_data'),
-]
+    path('api/stockprice/<str:ticker>/', StockPriceFilterAPIViews.as_view(),name='stock_price'),
+    path('api/signal/', SignalListAPIView.as_view(),name='signal'),
+
+]   
