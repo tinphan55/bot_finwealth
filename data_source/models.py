@@ -167,7 +167,7 @@ class StockOverviewDataTrading(models.Model):
 
     def save(self, *args, **kwargs):
         # Calculate checksum and save the object
-        self.price = StockPriceFilter.objects.filter(ticker = self.ticker).order_by('-date').first().close
+        self.price = StockPriceFilter.objects.filter(ticker = self.ticker).order_by('-date').first().close*1000
         self.marketcap = self.outstanding_shares*self.price
         if self.eps_tr:
             self.price_to_earnings = round(self.price/self.eps_tr ,3)
@@ -180,8 +180,9 @@ class StockOverviewDataTrading(models.Model):
         self.volume_avg_cr_50d = round(StockPriceFilter.objects.filter(ticker =self.ticker).order_by('-date_time')[:50].aggregate(avg_volume_50=Avg('volume'))['avg_volume_50'],3)
         self.volume_avg_cr_200d = round(StockPriceFilter.objects.filter(ticker =self.ticker).order_by('-date_time')[:200].aggregate(avg_volume_200=Avg('volume'))['avg_volume_200'],3)
         valuation = StockValuation.objects.filter(ticker__ticker = self.ticker)
-        self.avg_target_price  = round(valuation.aggregate(avg_target_price=Avg('target_price'))['avg_target_price'],3)
+        avg_target_price  = valuation.aggregate(avg_target_price=Avg('target_price'))['avg_target_price']
         if self.avg_target_price !=0:
+            self.avg_target_price =round(avg_target_price,3)
             self.up_size = round(self.avg_target_price/self.price -1,3)
         super(StockOverviewDataTrading, self).save(*args, **kwargs)
     
