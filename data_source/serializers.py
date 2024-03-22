@@ -61,6 +61,6 @@ class StockPriceFilterSerializer(serializers.ModelSerializer):
 class SignalSerializer(serializers.ModelSerializer):
     class Meta:
         model= Signal
-        fields =  ['ticker','signal','close','take_profit_price','ratio_cutloss','strategy','market_price']
+        fields =  ['ticker','signal','close','take_profit_price','cutloss_price','strategy','market_price']
 
     
