@@ -601,18 +601,24 @@ def update_tbstockoverviewdatatrading():
 def update_stockdataratio_yearly():
     list_stock = StockOverview.objects.all()
     for object in list_stock:
+        print (object.ticker)
         list_year = ['2020', '2021', '2022', '2023']
         for year in list_year:
             data = compare_ratio_yearly(year)
             ticker = StockOverview.objects.get(ticker=object.ticker)
             for item in data:
                 try:
-                    report_date = item.get('report_date')
-                    stock_data, created = StockRatioData.objects.get_or_create(ticker=ticker, report_date=report_date, defaults=item)
+                    report_date = item.get('reportDate')
+                    ratio_code=item.get('ratioCode')
+                    defaults = {
+                        'item_name':item.get('itemName'),
+                        'value': round(item.get('value'),3)
+                    }
+                    stock_data, created = StockRatioData.objects.get_or_create(ticker=ticker, report_date=report_date,ratio_code=ratio_code, defaults=defaults)
                     if not created:
                         # Bản ghi đã tồn tại, bạn có thể thực hiện các thao tác khác tại đây
                         pass
                 except Exception as e:
                     # Xử lý lỗi ở đây, hoặc bỏ qua lỗi và tiếp tục vòng lặp
                     pass
-                time.sleep(30)
+        time.sleep(30)        

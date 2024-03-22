@@ -182,7 +182,6 @@ class StockValuation(models.Model):
 
 class StockRatioData(models.Model):
     ticker = models.ForeignKey(StockOverview,on_delete=models.CASCADE,verbose_name = 'Cổ phiếu' )
-    group = models.CharField(max_length=100)
     report_date = models.DateField()
     item_code = models.CharField(max_length=100)
     ratio_code = models.CharField(max_length=100)

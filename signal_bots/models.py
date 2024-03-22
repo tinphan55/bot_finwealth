@@ -4,6 +4,7 @@ from django.dispatch import receiver
 from django.db.models.signals import post_save
 from telegram_bot.models import *
 from data_source.models import *
+from data_source.function import define_stock_date_to_sell
 from telegram import Bot
 
 class Signal(models.Model):
@@ -43,7 +44,7 @@ class Signal(models.Model):
 def create_cutloss_signal(sender, instance, created, **kwargs):
     if not created:
         signal  = Signal.objects.filter(ticker=instance.ticker, strategy=1,is_closed=False )  
-        external_room = ChatGroupTelegram.objects.filter(type = 'external',is_signal =True,rank ='1' )
+        # external_room = ChatGroupTelegram.objects.filter(type = 'external',is_signal =True,rank ='1' )
         for stock in signal:
             stock.market_price = instance.close
             stock.wavefoot = round((stock.market_price/stock.close - 1) * 100, 2)
@@ -52,20 +53,19 @@ def create_cutloss_signal(sender, instance, created, **kwargs):
                 stock.exit_price = stock.take_profit_price
                 stock.take_profit_price = round(stock.take_profit_price + stock.ratio_cutloss*stock.close/100,2)
                 stock.save()
-                for group in external_room:
-                        bot = Bot(token=group.token.token)
-                        # bot = Bot(token='5881451311:AAEJYKo0ttHU0_Ztv3oGuf-rfFrGgajjtEk')
-                        try:
-                            bot.send_message(
-                                chat_id=group.chat_id, #room Khách hàng
-                                # chat_id='-870288807',
-                                text=f"Tín hiệu {stock.ticker} mua tại ngày {stock.date} đã vượt mốc chốt lời, giá chốt lời mới được nâng thêm 1R là {stock.take_profit_price} ")  
-                        except:
-                            pass
-            new_time = time(00, 00, 0)
+                # for group in external_room:
+                #         bot = Bot(token=group.token.token)
+                #         # bot = Bot(token='5881451311:AAEJYKo0ttHU0_Ztv3oGuf-rfFrGgajjtEk')
+                #         try:
+                #             bot.send_message(
+                #                 chat_id=group.chat_id, #room Khách hàng
+                #                 # chat_id='-870288807',
+                #                 text=f"Tín hiệu {stock.ticker} mua tại ngày {stock.date} đã vượt mốc chốt lời, giá chốt lời mới được nâng thêm 1R là {stock.take_profit_price} ")  
+                #         except:
+                #             pass
+    
             today = datetime.now().date() 
-            date_signal = datetime.combine(stock.date, new_time)
-            date_check = difine_date_stock_on_account(date_signal).date()
+            date_check = define_stock_date_to_sell(stock.date)
             if stock.exit_price >= instance.close and today >=date_check:
                 stock.is_closed = True
                 stock.date_closed_deal = today
@@ -77,14 +77,14 @@ def create_cutloss_signal(sender, instance, created, **kwargs):
                     stock.noted ='cutloss'
                     note = 'CẮT LỖ'
                 stock.save()
-                for group in external_room:
-                    bot = Bot(token=group.token.token)
-                    try:
-                        bot.send_message(
-                            chat_id=group.chat_id, #room Khách hàng
-                            text=f"Có tín hiệu {note} cho cổ phiếu {stock.ticker} mua tại ngày {stock.date} với tỷ lệ lợi nhuận là {stock.wavefoot}%")  
-                    except:
-                        pass
+                # for group in external_room:
+                #     bot = Bot(token=group.token.token)
+                #     try:
+                #         bot.send_message(
+                #             chat_id=group.chat_id, #room Khách hàng
+                #             text=f"Có tín hiệu {note} cho cổ phiếu {stock.ticker} mua tại ngày {stock.date} với tỷ lệ lợi nhuận là {stock.wavefoot}%")  
+                #     except:
+                #         pass
                 
                     
                        
