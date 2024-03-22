@@ -179,6 +179,8 @@ class StockOverviewDataTrading(models.Model):
         self.volume_avg_cr_20d = round(StockPriceFilter.objects.order_by('-date_time')[:20].aggregate(avg_volume_20=Avg('volume'))['avg_volume_20'],3)
         self.volume_avg_cr_50d = round(StockPriceFilter.objects.order_by('-date_time')[:50].aggregate(avg_volume_50=Avg('volume'))['avg_volume_50'],3)
         self.volume_avg_cr_200d = round(StockPriceFilter.objects.order_by('-date_time')[:200].aggregate(avg_volume_200=Avg('volume'))['avg_volume_200'],3)
+        valuation = StockValuation.objects.filter(ticker__ticker = self.ticker)
+        self.avg_target_price  = round(valuation.aggregate(avg_target_price=Avg('target_price'))['avg_target_price'],3)
         super(StockOverviewDataTrading, self).save(*args, **kwargs)
     
     class Meta:
