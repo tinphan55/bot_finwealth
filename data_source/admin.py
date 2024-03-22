@@ -20,7 +20,7 @@ class FundamentalAnalysisReportAdmin(admin.ModelAdmin):
             'fields': ('date', 'tags', 'file', 'source', 'valuation')
         }),
     )
-    search_fields = ['get_report_tags',]
+    search_fields = ['tags__name',]
 
     def get_report_tags(self, obj):
         return ", ".join([str(tag) for tag in obj.tags.all()])  # Đổi obj.tags thành obj.tags.all()

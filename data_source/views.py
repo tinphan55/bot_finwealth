@@ -1,6 +1,7 @@
 from rest_framework import generics
 from .serializers import *
 from .models import *
+from rest_framework import viewsets
 
 class FundamentalAnalysisReportSegmentAPIView(generics.RetrieveAPIView):
     queryset = FundamentalAnalysisReportSegment.objects.all()
@@ -28,3 +29,43 @@ class NewsCreateAPIView(generics.CreateAPIView):
 class NewsListAPIView(generics.ListAPIView):
     queryset = News.objects.all()
     serializer_class = NewsSerializer
+    
+
+class StockOverviewDetailAPIView(generics.ListAPIView):
+    serializer_class = StockOverviewSerializer
+    def get_queryset(self):
+        stock = self.kwargs.get('ticker', '')  # Sử dụng kwargs thay vì query_params
+        queryset = StockOverview.objects.filter(ticker=stock)
+        return queryset
+    
+class StockShareholderListAPIView(generics.ListAPIView):
+    serializer_class = StockShareholderSerializer
+    def get_queryset(self):
+        stock = self.kwargs.get('ticker', '')  # Sử dụng kwargs thay vì query_params
+        queryset = StockShareholder.objects.filter(ticker__ticker=stock)
+        return queryset
+
+
+
+class StockValuationListAPIView(generics.ListCreateAPIView):
+    serializer_class = StockValuationSerializer
+    def get_queryset(self):
+        stock = self.kwargs.get('ticker', '')  # Sử dụng kwargs thay vì query_params
+        queryset = StockValuation.objects.filter(ticker__ticker=stock)
+        return queryset
+
+class StockOverviewDataTradingListAPIView(generics.ListAPIView):
+    serializer_class = StockOverviewDataTradingSerializer
+    def get_queryset(self):
+        stock = self.kwargs.get('ticker', '')  # Sử dụng kwargs thay vì query_params
+        queryset = StockOverviewDataTrading.objects.filter(ticker__ticker=stock)
+        return queryset
+
+class StockRatioDataListAPIView(generics.ListAPIView):
+    serializer_class = StockRatioDataSerializer
+    def get_queryset(self):
+        stock = self.kwargs.get('ticker', '')  # Sử dụng kwargs thay vì query_params
+        queryset = StockRatioData.objects.filter(ticker__ticker=stock)
+        return queryset
+    
+    

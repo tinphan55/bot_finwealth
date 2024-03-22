@@ -7,6 +7,7 @@ import fitz  # PyMuPDF
 import os
 from django.core.exceptions import ValidationError
 import re
+import hashlib
 
 
 # Create your models here.
@@ -199,26 +200,39 @@ class FundamentalAnalysisReport(models.Model):
     date = models.DateField(verbose_name='Ngày báo cáo')
     tags = models.ManyToManyField('Tag')
     file = models.FileField(upload_to='reports/', validators=[FileExtensionValidator(['pdf', 'docx'])], verbose_name='Tệp đính kèm')
+    file_checksum = models.CharField(max_length=64, blank=True, verbose_name='Checksum của tệp')
 
+    def clean(self):
+        # Override clean method to check for duplicate file
+        if self.file:
+            # Calculate checksum of the file
+            file_checksum = self.calculate_checksum(self.file)
+            # Check if any other report already has this checksum
+            if FundamentalAnalysisReport.objects.exclude(id=self.id).filter(file_checksum=file_checksum).exists():
+                raise ValidationError('Báo cáo đã được tải lên')
+
+    def calculate_checksum(self, file):
+        checksum = hashlib.sha256()
+        for chunk in file.chunks():
+            checksum.update(chunk)
+        return checksum.hexdigest()
+
+    def save(self, *args, **kwargs):
+        # Calculate checksum and save the object
+        if not self.pk:
+            self.file_checksum = self.calculate_checksum(self.file)
+        if self.file:
+            self.name = os.path.basename(self.file.name)
+        super(FundamentalAnalysisReport, self).save(*args, **kwargs)
+    
     class Meta:
         verbose_name = 'Báo cáo phân tích'
         verbose_name_plural = 'Báo cáo phân tích'
+    
     def __str__(self):
         return str(self.name) 
+
     
-    def clean(self):
-        # Method này sẽ được gọi khi bạn gọi phương thức full_clean, hoặc khi form gọi phương thức clean
-        # Thực hiện kiểm tra trùng lặp
-        if self._state.adding:
-            print('có')
-            if FundamentalAnalysisReport.objects.filter(date=self.date, source=self.source, name=self.name).exists():
-                raise ValidationError("Đã có báo cáo tương tự được tải lên")
-    
-        
-    def save(self, *args, **kwargs):
-        if self.file:
-            self.name = os.path.basename(self.file.name)
-        return super(FundamentalAnalysisReport, self).save(*args, **kwargs)
     
 class FundamentalAnalysisReportSegment(models.Model):
     report = models.ForeignKey(FundamentalAnalysisReport,on_delete=models.CASCADE,verbose_name = 'Báo cáo' )
@@ -261,47 +275,47 @@ class Tag (models.Model):
     def __str__(self):
         return f"{self.name}"
 
-def save_fa():
-    fa = StockFundamentalData.objects.all()
-    for self in fa:
-        if self.roa:
-            #roa từ 0-25 có điểm từ 50-90
-            if self.roa > 0 and self.roa <=25 :
-                rating_roa = (self.roa-0) /(25-0)*40+50
-            elif self.roa >25:
-                rating_roa = 100
-            else:
-                rating_roa = 0
-        else:
-            rating_roa = 0
-        if self.roe:
-            if self.roe >0 and self.roe <=25:
-                rating_roe = (self.roe-0) /(25-0)*40+50
-            elif self.roe >25:
-                rating_roe = 100
-            else:
-                rating_roe = 0
-        else:
-            rating_roe = 0
-        self.growth_rating = round(rating_roa*0.5 + rating_roe*0.5,2)
+# def save_fa():
+#     fa = StockFundamentalData.objects.all()
+#     for self in fa:
+#         if self.roa:
+#             #roa từ 0-25 có điểm từ 50-90
+#             if self.roa > 0 and self.roa <=25 :
+#                 rating_roa = (self.roa-0) /(25-0)*40+50
+#             elif self.roa >25:
+#                 rating_roa = 100
+#             else:
+#                 rating_roa = 0
+#         else:
+#             rating_roa = 0
+#         if self.roe:
+#             if self.roe >0 and self.roe <=25:
+#                 rating_roe = (self.roe-0) /(25-0)*40+50
+#             elif self.roe >25:
+#                 rating_roe = 100
+#             else:
+#                 rating_roe = 0
+#         else:
+#             rating_roe = 0
+#         self.growth_rating = round(rating_roa*0.5 + rating_roe*0.5,2)
         
-        if self.dept_ratio:
-            #dept từ 0-1: 80-100 điểm, 1-5: 50-80 điểm, 5-10: 20 - 50, trên 10: 20
-            if self.dept_ratio > 0 and self.dept_ratio <=1 :
-                rating_dept = 100 - (self.dept_ratio-0) /(1-0)*(100-80)
-            elif self.dept_ratio >1 and self.dept_ratio<=5:
-                rating_dept = 80 - (self.dept_ratio-1) /(5-1)*(80-50)
-            elif self.dept_ratio >5 and self.dept_ratio<=10:
-                rating_dept = 50 - (self.dept_ratio-5) /(10-5)*(50-20)
-            elif self.dept_ratio >10:
-                rating_dept = 10
-            else:
-                rating_dept = 0
-        else:
-            rating_dept = 0
-        self.stable_rating  = round(rating_dept,2)
-        self.save()
-    return
+#         if self.dept_ratio:
+#             #dept từ 0-1: 80-100 điểm, 1-5: 50-80 điểm, 5-10: 20 - 50, trên 10: 20
+#             if self.dept_ratio > 0 and self.dept_ratio <=1 :
+#                 rating_dept = 100 - (self.dept_ratio-0) /(1-0)*(100-80)
+#             elif self.dept_ratio >1 and self.dept_ratio<=5:
+#                 rating_dept = 80 - (self.dept_ratio-1) /(5-1)*(80-50)
+#             elif self.dept_ratio >5 and self.dept_ratio<=10:
+#                 rating_dept = 50 - (self.dept_ratio-5) /(10-5)*(50-20)
+#             elif self.dept_ratio >10:
+#                 rating_dept = 10
+#             else:
+#                 rating_dept = 0
+#         else:
+#             rating_dept = 0
+#         self.stable_rating  = round(rating_dept,2)
+#         self.save()
+#     return
        
     
         

@@ -614,3 +614,4 @@ def update_stockdataratio_yearly():
                 except Exception as e:
                     # Xử lý lỗi ở đây, hoặc bỏ qua lỗi và tiếp tục vòng lặp
                     pass
+                time.sleep(30)

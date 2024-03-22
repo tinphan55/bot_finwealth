@@ -9,5 +9,9 @@ urlpatterns = [
     path('api/segment/search/', FundamentalAnalysisReportSegmentSearchAPIView.as_view(), name='segment-search-api'),
     path('api/news/create/', NewsCreateAPIView.as_view(), name='news-create'),
     path('api/news/list/', NewsListAPIView.as_view(), name='news-list'),
-
+    path('api/stock-overview/<str:ticker>/', StockOverviewDetailAPIView.as_view(), name='stock_overview_detail'),
+    path('api/stock-shareholder/<str:ticker>/', StockShareholderListAPIView.as_view(), name='stock_shareholder_list'),
+    path('api/stock-valuation/<str:ticker>/', StockValuationListAPIView.as_view(), name='stock_valuation_list'),
+    path('api/stock-data-trading/<str:ticker>/', StockOverviewDataTradingListAPIView.as_view(), name='stock_data_trading'),
+    path('api/stock-ratio-data/<str:ticker>/', StockRatioDataListAPIView.as_view(), name='stock_ratio_data'),
 ]

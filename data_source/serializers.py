@@ -18,3 +18,37 @@ class NewsSerializer(serializers.ModelSerializer):
     class Meta:
         model = News
         fields = '__all__'
+
+class StockOverviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StockOverview
+        exclude = ['id',]
+
+class StockShareholderSerializer(serializers.ModelSerializer):
+    ticker = serializers.StringRelatedField()
+
+    class Meta:
+        model = StockShareholder
+        exclude = ['id',]
+
+class StockOverviewDataTradingSerializer(serializers.ModelSerializer):
+    ticker = serializers.StringRelatedField()
+
+    class Meta:
+        model = StockOverviewDataTrading
+        exclude = ['id',]
+
+class StockValuationSerializer(serializers.ModelSerializer):
+    ticker = serializers.StringRelatedField()
+
+    class Meta:
+        model = StockValuation
+        exclude = ['id',]
+
+class StockRatioDataSerializer(serializers.ModelSerializer):
+    ticker = serializers.StringRelatedField()
+
+    class Meta:
+        model = StockRatioData
+        exclude = ['id',]
+    
