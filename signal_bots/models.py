@@ -103,7 +103,7 @@ def stock_pitch_valuation():
                 'close': stock.price,
                 'market_price':stock.price,
                 'date': datetime.now().date(),
-                'signal': 'buy',
+                'signal': 'Mua',
                 'strategy': StrategyTrading.objects.get(name="Valuation"),
                 'take_profit_price': stock.avg_target_price,
                 'is_noti':True,

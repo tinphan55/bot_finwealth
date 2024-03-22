@@ -183,7 +183,7 @@ CRONJOBS = [
     # ('0 0 * * *', 'ecotrading.schedule.schedule_morning'),# chạy lúc 7 giờ sáng
     # ('30 4 * * 1-5', 'ecotrading.schedule.schedule_mid_trading_date'),# chạy lúc 11h30 sáng
     ('30 8 * * 1-5', 'signal_bots.filter.filter_stock_daily'),# chạy lúc 15h trưa
-    # ('40 8 * * 1-5', 'ecotrading.schedule.schedule_after_trading_date'), # Chạy lúc 15:40 từ thứ 2 đến thứ 6
+    ('40 9 * * 1-5', 'signal_bots.models.stock_pitch_valuation'), # Chạy lúc 15:40 từ thứ 2 đến thứ 6
     # ('30 15 * * 1-5', 'portfolio.models.get_all_info_stock_price'), # Chạy lúc 21h từ thứ 2 đến thứ 6
 
 ]
