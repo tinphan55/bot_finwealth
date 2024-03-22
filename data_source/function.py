@@ -4,7 +4,6 @@ from bs4 import BeautifulSoup
 import json
 from data_source.models import *
 from data_source.posgress import *
-from signal_bots.models import Signal
 from manage_bots.models import StrategyTrading
 
 def define_stock_date_to_sell(buy_date, days=2):
@@ -625,25 +624,3 @@ def update_stockdataratio_yearly():
                     pass
         time.sleep(30)        
 
-def stock_pitch_valuation():
-    stock_pitch = StockOverviewDataTrading.objects.filter(upsize__gte=0.1)
-    
-    # Lọc ra các ticker không tồn tại trong stock_pitch
-    signals_to_delete = Signal.objects.filter(strategy__name="valuation").exclude(ticker__in=stock_pitch.values_list('ticker', flat=True))
-    
-    # Xóa các bản ghi không tồn tại trong stock_pitch
-    signals_to_delete.delete()
-    
-    # Tạo hoặc cập nhật Signal cho các ticker trong stock_pitch
-    for stock in stock_pitch:
-        signal, created = Signal.objects.get_or_create(
-            ticker=stock.ticker,
-            defaults={
-                'close': stock.price,
-                'date': datetime.now().date(),
-                'signal': 'buy',
-                'strategy': StrategyTrading.objects.get(name="valuation"),
-                'take_profit_price': stock.avg_target_price,
-            }
-        )
-    
