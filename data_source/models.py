@@ -8,6 +8,7 @@ import os
 from django.core.exceptions import ValidationError
 import re
 import hashlib
+from django.db.models import Max, Min,  Avg
 
 
 # Create your models here.
@@ -140,8 +141,13 @@ class StockShareholder(models.Model):
 
 class StockOverviewDataTrading(models.Model):
     ticker = models.ForeignKey(StockOverview, on_delete=models.CASCADE, verbose_name='Cổ phiếu')
+    price = models.FloatField(default=0, verbose_name='Giá thị trường')
     marketcap = models.FloatField(default=0, verbose_name='Market Cap')
     volume_avg_cr_10d = models.FloatField(default=0, verbose_name='Volume Average CR 10D')
+    volume_avg_cr_20d = models.FloatField(default=0, verbose_name='Volume Average CR 20D')
+    volume_avg_cr_50d = models.FloatField(default=0, verbose_name='Volume Average CR 50D')
+    volume_avg_cr_100d = models.FloatField(default=0, verbose_name='Volume Average CR 100D')
+    volume_avg_cr_200d = models.FloatField(default=0, verbose_name='Volume Average CR 200D')
     price_highest_cr_52w = models.FloatField(default=0, verbose_name='Price Highest CR 52W')
     price_lowest_cr_52w = models.FloatField(default=0, verbose_name='Price Lowest CR 52W')
     outstanding_shares = models.FloatField(default=0, verbose_name='Outstanding Shares')
@@ -159,13 +165,31 @@ class StockOverviewDataTrading(models.Model):
     def __str__(self):
         return self.ticker.ticker
 
-
+    def save(self, *args, **kwargs):
+        # Calculate checksum and save the object
+        self.price = StockPriceFilter.objects.filter(ticker = self.ticker).order_by('-date').first().close
+        self.marketcap = self.outstanding_shares*self.price
+        self.price_to_earnings = self.price/self.eps_tr 
+        self.price_to_book = self.price/self.bvps_cr
+        self.price_highest_cr_52w = StockPriceFilter.objects.aggregate(max_close=Max('close'))['max_close']
+        self.price_lowest_cr_52w  = StockPriceFilter.objects.aggregate(min_close=Min('close'))['min_close']
+        self.volume_avg_cr_10d = StockPriceFilter.objects.order_by('-date_time')[:10].aggregate(avg_volume_10=Avg('volume'))['avg_volume_10']
+        self.volume_avg_cr_20d = StockPriceFilter.objects.order_by('-date_time')[:20].aggregate(avg_volume_20=Avg('volume'))['avg_volume_20']
+        self.volume_avg_cr_50d = StockPriceFilter.objects.order_by('-date_time')[:50].aggregate(avg_volume_50=Avg('volume'))['avg_volume_50']
+        self.volume_avg_cr_200d = StockPriceFilter.objects.order_by('-date_time')[:200].aggregate(avg_volume_200=Avg('volume'))['avg_volume_200']
+        super(StockOverviewDataTrading, self).save(*args, **kwargs)
+    
     class Meta:
         verbose_name = 'Dữ liệu cơ bản'
         verbose_name_plural = 'Dữ liệu cơ bản'
 
     def __str__(self):
         return self.ticker.ticker
+
+@receiver(post_save, sender=StockPriceFilter)
+def save_model_stockoverviewdatatrading(sender, instance, created, **kwargs):
+    self = StockOverviewDataTrading.objects.filter(ticker__ticker = instance.ticker)
+    self.save()
     
 class StockValuation(models.Model):
     ticker = models.ForeignKey(StockOverview,on_delete=models.CASCADE,verbose_name = 'Cổ phiếu' )

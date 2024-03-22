@@ -128,7 +128,7 @@ def get_info_stock_price_filter():
         maxdate=  StockPriceFilter.objects.all().order_by('-date').first().date
         len_date = (maxdate -mindate).days
         delete = 0
-        if len_date >201:
+        if len_date >260:
             delete = StockPriceFilter.objects.filter(date=mindate).delete()
     return f"Tạo mới tổng {count} cổ phiếu, và xóa {delete} cổ phiếu cũ " 
 
