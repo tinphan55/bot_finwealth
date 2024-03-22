@@ -34,7 +34,7 @@ class StockPriceFilterAPIViews(generics.ListAPIView):
     serializer_class = StockPriceFilterSerializer
     def get_queryset(self):
         stock = self.kwargs.get('ticker', '')  # Sử dụng kwargs thay vì query_params
-        queryset = StockPriceFilter.objects.filter(ticker=stock)
+        queryset = StockPriceFilter.objects.filter(ticker=stock).order_by('-date')
         return queryset
 
 class StockOverviewDetailAPIView(generics.ListAPIView):
@@ -77,6 +77,5 @@ class StockRatioDataListAPIView(generics.ListAPIView):
 class SignalListAPIView(generics.ListAPIView):
     serializer_class = SignalSerializer
     def get_queryset(self):
-        stock = self.kwargs.get('ticker', '')  # Sử dụng kwargs thay vì query_params
-        queryset = Signal.objects.filter(ticker=stock, is_closed=False)
-        return queryset
+        queryset = Signal.objects.filter(is_closed=False,is_noti =True)
+        return queryset 
