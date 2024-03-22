@@ -182,7 +182,7 @@ class StockOverviewDataTrading(models.Model):
         valuation = StockValuation.objects.filter(ticker__ticker = self.ticker)
         self.avg_target_price  = round(valuation.aggregate(avg_target_price=Avg('target_price'))['avg_target_price'],3)
         if self.avg_target_price !=0:
-            self.up_size = round(self.price/self.avg_target_price -1,3)
+            self.up_size = round(self.avg_target_price/self.price -1,3)
         super(StockOverviewDataTrading, self).save(*args, **kwargs)
     
     class Meta:
