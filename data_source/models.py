@@ -9,6 +9,8 @@ from django.core.exceptions import ValidationError
 import re
 import hashlib
 from django.db.models import Max, Min,  Avg
+from django.core.exceptions import ValidationError
+from fuzzywuzzy import fuzz
 
 
 # Create your models here.
@@ -232,6 +234,7 @@ class StockRatioData(models.Model):
         return self.ticker.ticker
     
 class FundamentalAnalysisReport(models.Model):
+    username = models.CharField(max_length=100,null=True, blank=True, verbose_name='Người chia sẽ')
     name = models.CharField(max_length=100, blank=True,null=True, verbose_name='Tên báo cáo')
     source = models.CharField(max_length=100, blank=True, verbose_name='Nguồn')
     modified_date = models.DateTimeField(auto_now=True ,verbose_name='Ngày tạo')
@@ -304,7 +307,17 @@ class News(models.Model):
     class Meta:
         verbose_name = 'Thông tin ghi nhận'
         verbose_name_plural = 'Thông tin ghi nhận'
-    
+
+
+    def clean(self):
+        similarity_threshold = 80  # Ngưỡng tương đồng mong muốn (ở đây là 80%)
+        existing_news = News.objects.exclude(pk=self.pk)
+
+        for news in existing_news:
+            similarity_ratio = fuzz.partial_ratio(self.content, news.content)
+            if similarity_ratio >= similarity_threshold:
+                raise ValidationError("Nội dung quá giống với nội dung đã tồn tại")
+        super().clean()
     
 
 class Tag (models.Model):

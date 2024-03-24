@@ -14,10 +14,10 @@ class FundamentalAnalysisReportSegmentAdmin(admin.TabularInline):
 class FundamentalAnalysisReportAdmin(admin.ModelAdmin):
     model = FundamentalAnalysisReport
     inlines = [FundamentalAnalysisReportSegmentAdmin]
-    list_display = ['name','date', 'source', 'valuation','get_report_tags']
+    list_display = ['username','name','date', 'source', 'valuation','get_report_tags']
     fieldsets = (
         ('Thông tin báo cáo', {
-            'fields': ('date', 'tags', 'file', 'source', 'valuation')
+            'fields': ('username','date', 'tags', 'file', 'source', 'valuation')
         }),
     )
     search_fields = ['tags__name',]
@@ -34,7 +34,12 @@ class FundamentalAnalysisReportAdmin(admin.ModelAdmin):
 
 admin.site.register(FundamentalAnalysisReport,FundamentalAnalysisReportAdmin)
 admin.site.register(Tag)
-admin.site.register(News)
+
+class NewsAdmin(admin.ModelAdmin):
+    list_display = ['username', 'source', 'modified_date', 'tags','content',]
+    search_fields = ['username', 'source', 'tags']
+    list_editable = ['content',]
+admin.site.register(News,NewsAdmin)
 
 
 @admin.register(StockOverview)
@@ -60,3 +65,5 @@ class StockRatioDataAdmin(admin.ModelAdmin):
        list_display = ('ticker','report_date', 'item_name', 'value')
    
 admin.site.register(StockRatioData, StockRatioDataAdmin)
+
+
