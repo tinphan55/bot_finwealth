@@ -35,7 +35,6 @@ class Point(models.Model):
         verbose_name_plural = 'Tổng điểm'
     @property
     def total_points(self):
-
         return self.task_points + self.share_points + self.trade_points + self.promotion_points +self.used_point
 
     def __str__(self):
@@ -72,6 +71,8 @@ def update_user_points(sender, instance, **kwargs):
         point = Point.objects.get(user=user)
         point.task_points = news_count+report_count*2
         point.save()
+    user.total_points = point.total_points
+    user.save()
 
 
 class SharePoint(models.Model):
@@ -149,7 +150,8 @@ def update_user_points(sender, instance, **kwargs):
         promotion_count =PromotionPoint.objects.filter(user=instance.user)
         point.promotion_points = sum(item.points for item in promotion_count)
         point.save()
-
+    user.total_points = point.total_points
+    user.save()
 
 def cal_used_point():
     point = Point.objects.all()
