@@ -157,7 +157,7 @@ def cal_used_point():
     point = Point.objects.all()
     today = datetime.now().date()
     for item in point:
-        last_login = point.user.id_member.last_login.date()
-        if item.total_points >0 and today==last_login:
+        #last_login = point.user.id_member.last_login.date()
+        if item.total_points >0: #and today==last_login:
             item.used_point -=1
             item.save()
