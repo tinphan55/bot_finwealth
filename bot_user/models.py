@@ -4,7 +4,7 @@ from data_source.models import News, FundamentalAnalysisReport
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from django.core.exceptions import ValidationError
-
+from datetime import datetime
 
 # Create your models here.
 class Member(models.Model):
@@ -153,7 +153,9 @@ def update_user_points(sender, instance, **kwargs):
 
 def cal_used_point():
     point = Point.objects.all()
+    today = datetime.now().date()
     for item in point:
-        if item.total_points >0:
+        last_login = point.user.id_member.last_login.date()
+        if item.total_points >0 and today==last_login:
             item.used_point -=1
             item.save()
