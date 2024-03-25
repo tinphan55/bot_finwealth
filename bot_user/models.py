@@ -30,6 +30,9 @@ class Point(models.Model):
     trade_points = models.IntegerField(default=0,null=True,blank=True, verbose_name='Điểm mua bán')
     promotion_points = models.IntegerField(default=0,null=True,blank=True, verbose_name='Điểm khuyến mãi')
     used_point =models.IntegerField(default=0,null=True,blank=True, verbose_name='Điểm đã sử dụng')
+    class Meta:
+        verbose_name = 'Tổng điểm'
+        verbose_name_plural = 'Tổng điểm'
     @property
     def total_points(self):
 

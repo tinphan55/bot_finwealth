@@ -305,8 +305,8 @@ class News(models.Model):
     content = models.TextField(verbose_name = 'Nội dung')
 
     class Meta:
-        verbose_name = 'Thông tin ghi nhận'
-        verbose_name_plural = 'Thông tin ghi nhận'
+        verbose_name = 'Thông tin'
+        verbose_name_plural = 'Thông tin'
 
 
     def clean(self):

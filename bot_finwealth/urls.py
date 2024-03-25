@@ -19,9 +19,11 @@ from django.urls import include, path
 from django.conf import settings
 from django.conf.urls.static import static
 import debug_toolbar
+from bot_user.views import cal_point
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('cal_point/', cal_point, name='cal_point'),
     path('', include('data_source.urls')), 
     path('', include('bot_user.urls')), 
 
