@@ -318,6 +318,7 @@ class News(models.Model):
             if similarity_ratio >= similarity_threshold:
                 raise ValidationError("Nội dung quá giống với nội dung đã tồn tại")
         super().clean()
+        
     
 
 class Tag (models.Model):

@@ -42,7 +42,8 @@ JAZZMIN_SETTINGS = {
         # Url that gets reversed (Permissions can be added)
         {"name": "Trang chủ",  "url": "admin:index", "permissions": ["auth.view_user"]},
         # external url that opens in a new window (Permissions can be added)
-        {"name": "Lọc cổ phiếu", "url":"http://ecotrading.com.vn/get_signal/", "new_window": True},
+        # {"name": "Lọc cổ phiếu", "url":"http://ecotrading.com.vn/get_signal/", "new_window": True},
+        {"name": "Quy chế", "url":"finwealth.vn/cal_point/", "new_window": True},
         # model admin to link to (Permissions checked against model)
         {"model": "order.Cart"},
 
