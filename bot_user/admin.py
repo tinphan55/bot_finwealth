@@ -40,7 +40,7 @@ admin.site.register(User, CustomUserAdmin)
 
 @admin.register(Point)
 class PointAdmin(admin.ModelAdmin):
-    list_display = ['user', 'task_points', 'share_points', 'trade_points','promotion_points','used_point', 'total_points']
+    list_display = ['user', 'task_points', 'share_points','promotion_points','used_point', 'total_points']
     list_display_links = ['user']
     search_fields = ['user__id_member__username',]
     def get_queryset(self, request):

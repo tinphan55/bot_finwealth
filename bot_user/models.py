@@ -77,7 +77,7 @@ def update_user_points(sender, instance, **kwargs):
 
 class SharePoint(models.Model):
     user = models.ForeignKey(Member, on_delete=models.CASCADE, null=True, blank=True)
-    recipient = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='received_points', verbose_name='Người nhận point')
+    recipient = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='received_points', verbose_name='Người nhận')
     points = models.IntegerField(verbose_name='Số điểm chia sẻ')
     description = models.TextField(null=True, blank =True,verbose_name='Diễn giải')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Thời gian')
