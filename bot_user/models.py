@@ -147,8 +147,8 @@ class PromotionPoint(models.Model):
         return f"Promotion Point for {self.user.id_member}"
 
     class Meta:
-        verbose_name = 'Promotion Point'
-        verbose_name_plural = 'Promotion Points'
+        verbose_name = 'Điểm thưởng'
+        verbose_name_plural = 'Điểm thưởng'
 
 @receiver([post_save,post_delete] ,sender=PromotionPoint)
 def update_user_points(sender, instance, **kwargs):
