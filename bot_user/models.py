@@ -4,7 +4,7 @@ from data_source.models import News, FundamentalAnalysisReport
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from django.core.exceptions import ValidationError
-
+from datetime import datetime
 
 # Create your models here.
 class Member(models.Model):
@@ -35,7 +35,6 @@ class Point(models.Model):
         verbose_name_plural = 'Tổng điểm'
     @property
     def total_points(self):
-
         return self.task_points + self.share_points + self.trade_points + self.promotion_points +self.used_point
 
     def __str__(self):
@@ -72,21 +71,35 @@ def update_user_points(sender, instance, **kwargs):
         point = Point.objects.get(user=user)
         point.task_points = news_count+report_count*2
         point.save()
+    user.total_points = point.total_points
+    user.save()
 
 
 class SharePoint(models.Model):
-    user = models.ForeignKey(Member, on_delete=models.CASCADE)
+    user = models.ForeignKey(Member, on_delete=models.CASCADE, null=True, blank=True)
     recipient = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='received_points', verbose_name='Người nhận point')
     points = models.IntegerField(verbose_name='Số điểm chia sẻ')
     description = models.TextField(null=True, blank =True,verbose_name='Diễn giải')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Thời gian')
 
+    class Meta:
+        verbose_name = 'Chia sẽ điểm'
+        verbose_name_plural = 'Chia sẽ điểm'
+
     def __str__(self):
         return f"Chia sẻ từ {self.recipient.id_member} - {self.points} points"
     
-    def clean(self):
-        total_point = Point.objects.get(user=self.user).total_points
-        if self.points > total_point:
+    
+    # def clean(self):
+    #     print (self.user)
+    #     total_point = self.user.total_points
+    #     if self.points > total_point:
+    #         raise ValidationError("Số điểm chia sẻ không được lớn hơn số điểm bạn có.")
+
+    def clean_fields(self, exclude=None):
+        super().clean_fields(exclude=exclude)
+        total_point = getattr(self.user, 'total_points', None)
+        if total_point is not None and self.points > total_point:
             raise ValidationError("Số điểm chia sẻ không được lớn hơn số điểm bạn có.")
     
 @receiver([post_save,post_delete] ,sender=SharePoint)
@@ -149,11 +162,16 @@ def update_user_points(sender, instance, **kwargs):
         promotion_count =PromotionPoint.objects.filter(user=instance.user)
         point.promotion_points = sum(item.points for item in promotion_count)
         point.save()
-
+    user.total_points = point.total_points
+    user.save()
 
 def cal_used_point():
     point = Point.objects.all()
+    today = datetime.now().date()
     for item in point:
-        if item.total_points >0:
+        #last_login = point.user.id_member.last_login.date()
+        if item.total_points >0: #and today==last_login:
             item.used_point -=1
             item.save()
+
+

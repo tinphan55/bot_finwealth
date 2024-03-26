@@ -20,8 +20,10 @@ from django.conf import settings
 from django.conf.urls.static import static
 import debug_toolbar
 from bot_user.views import cal_point
+from django.views.generic import RedirectView
 
 urlpatterns = [
+    path('', RedirectView.as_view(url='/admin/', permanent=True)),
     path('admin/', admin.site.urls),
     path('cal_point/', cal_point, name='cal_point'),
     path('', include('data_source.urls')), 

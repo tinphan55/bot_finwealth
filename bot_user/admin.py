@@ -45,9 +45,21 @@ class PointAdmin(admin.ModelAdmin):
 
 @admin.register(SharePoint)
 class SharePointAdmin(admin.ModelAdmin):
-    list_display = ['user', 'recipient', 'points', 'created_at']
+    list_display = ['user','recipient', 'points', 'created_at']
     search_fields = ['user__username', 'recipient__username', 'description']
     list_filter = ['created_at']
+    fields =['recipient', 'points','description']
+    def save_model(self, request, obj, form, change):
+        # Lưu người dùng đang đăng nhập vào trường user nếu đang tạo cart mới
+        if obj.user is None:
+            obj.user = request.user.member
+            obj.save()
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "recipient":
+            # Loại bỏ request.user khỏi danh sách lựa chọn
+            kwargs["queryset"] = db_field.remote_field.model.objects.exclude(id_member__username=request.user.username)
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 @admin.register(PromotionPoint)
 class PromotionPointAdmin(admin.ModelAdmin):
