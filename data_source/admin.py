@@ -17,6 +17,7 @@ class FundamentalAnalysisReportAdmin(admin.ModelAdmin):
     model = FundamentalAnalysisReport
     inlines = [FundamentalAnalysisReportSegmentAdmin]
     list_display = ['image_tag','username','name','date', 'source', 'valuation','get_report_tags']
+    list_display_links =['name',]
     readonly_fields = ['username',]
     fieldsets = (
         ('Thông tin báo cáo', {

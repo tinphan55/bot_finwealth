@@ -83,8 +83,8 @@ class SharePoint(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Thời gian')
 
     class Meta:
-        verbose_name = 'Chia sẽ điểm'
-        verbose_name_plural = 'Chia sẽ điểm'
+        verbose_name = 'Chia sẻ điểm'
+        verbose_name_plural = 'Chia sẻ điểm'
 
     def __str__(self):
         return f"Chia sẻ từ {self.recipient.id_member} - {self.points} points"

@@ -3,6 +3,7 @@ from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
 from django.utils.html import format_html
 from .models import *
+from django.db.models import Q
 
 class MemberInline(admin.StackedInline):
     model = Member
@@ -41,12 +42,20 @@ admin.site.register(User, CustomUserAdmin)
 class PointAdmin(admin.ModelAdmin):
     list_display = ['user', 'task_points', 'share_points', 'trade_points','promotion_points','used_point', 'total_points']
     list_display_links = ['user']
+    search_fields = ['user__id_member__username',]
+    def get_queryset(self, request):
+        if not request.user.is_superuser:
+            # Chỉ trả về các bản ghi có sum_stock > 0
+            return super().get_queryset(request).filter(user__id_member__username=request.user.username)
+        else:
+            return super().get_queryset(request).all()
+
 
 
 @admin.register(SharePoint)
 class SharePointAdmin(admin.ModelAdmin):
     list_display = ['user','recipient', 'points', 'created_at']
-    search_fields = ['user__username', 'recipient__username', 'description']
+    search_fields = ['user__id_member__username', 'recipient__id_member__username', ]
     list_filter = ['created_at']
     fields =['recipient', 'points','description']
     def save_model(self, request, obj, form, change):
@@ -61,8 +70,22 @@ class SharePointAdmin(admin.ModelAdmin):
             kwargs["queryset"] = db_field.remote_field.model.objects.exclude(id_member__username=request.user.username)
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
+    def get_queryset(self, request):
+        if not request.user.is_superuser:
+            # Chỉ trả về các bản ghi có sum_stock > 0
+            return super().get_queryset(request).filter(Q(user__id_member__username=request.user.username) | Q(recipient__id_member__username=request.user.username))
+        else:
+            return super().get_queryset(request).all()
+        
 @admin.register(PromotionPoint)
 class PromotionPointAdmin(admin.ModelAdmin):
     list_display = ['user', 'points', 'created_at']
-    search_fields = ['user__username', 'description']
+    search_fields = ['user__id_member__username', ]
     list_filter = ['created_at']
+
+    def get_queryset(self, request):
+        if not request.user.is_superuser:
+            # Chỉ trả về các bản ghi có sum_stock > 0
+            return super().get_queryset(request).filter(user__id_member__username=request.user.username)
+        else:
+            return super().get_queryset(request).all()
