@@ -276,28 +276,7 @@ class FundamentalAnalysisReport(models.Model):
     def __str__(self):
         return str(self.name) 
 
-@receiver(post_save, sender=FundamentalAnalysisReport)
-def update_stock_valuation(sender, instance, created, **kwargs):
-    tags_values = instance.tags.all()
-    if instance.valuation is not None and len(tags_values) == 1:
-        # Lấy hoặc tạo mới một StockOverview từ tên ticker trong tags_values
-        stock, _ = StockOverview.objects.get_or_create(ticker=tags_values[0].name)
-        target_price = instance.valuation
-        if target_price > 1000:
-            target_price= target_price/1000
-        # Tạo mới hoặc cập nhật StockValuation
-        try:
-            stock_valuation, _ = StockValuation.objects.get_or_create(
-                ticker=stock,
-                type='Tạo tự động',
-                firm=instance.source,
-                report_date=instance.date,
-                report_price=StockPriceFilter.objects.get(ticker=tags_values[0].name, date=instance.date).close,
-                source='DCG', 
-                target_price = target_price
-            )
-        except Exception as e:
-            pass
+
 
     
 class FundamentalAnalysisReportSegment(models.Model):

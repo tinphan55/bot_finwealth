@@ -17,6 +17,33 @@ def define_stock_date_to_sell(buy_date, days=2):
         next_trading_date = trading_dates.first().date
     return next_trading_date
 
+# CẦn chỉnh lại hàm khi cào từ VNDS về lại
+def update_stock_valuation():
+    yesterday = datetime.now().date() - timedelta(days=1)
+    # Lọc các bản ghi FundamentalAnalysisReport tạo trong ngày hôm qua
+    reports_created_yesterday = FundamentalAnalysisReport.objects.filter(modified_date__date=yesterday)
+    for instance in reports_created_yesterday:
+        tags_values = instance.tags.all()
+        if instance.valuation is not None and len(tags_values) == 1:
+            # Lấy hoặc tạo mới một StockOverview từ tên ticker trong tags_values
+            stock, _ = StockOverview.objects.get_or_create(ticker=tags_values[0].name)
+            target_price = instance.valuation
+            if target_price > 1000:
+                target_price= target_price/1000
+            # Tạo mới hoặc cập nhật StockValuation
+            try:
+                stock_valuation, _ = StockValuation.objects.get_or_create(
+                    ticker=stock,
+                    type='Tạo tự động',
+                    firm=instance.source,
+                    report_date=instance.date,
+                    report_price=StockPriceFilter.objects.get(ticker=tags_values[0].name, date=instance.date).close,
+                    source='DCG', 
+                    target_price = target_price
+                )
+            except Exception as e:
+                pass
+
 # def save_fa_valuation():
 #     fa = StockFundamentalData.objects.all()
 #     for self in fa:
