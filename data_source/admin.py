@@ -42,8 +42,9 @@ class FundamentalAnalysisReportAdmin(admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         # Lưu người dùng đang đăng nhập vào trường user nếu đang tạo cart mới
-        obj.username = request.user.username
-        obj.save()
+        if not change:
+            obj.username = request.user.username
+            obj.save()
 
 # class StockFundamentalDataAdmin(admin.ModelAdmin):
 #     model= StockFundamentalData
@@ -63,8 +64,10 @@ class NewsAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         # Lưu người dùng đang đăng nhập vào trường user nếu đang tạo cart mới
         if obj.username is None:
-            obj.username = request.user.username
-            obj.save()
+            if not change:
+                obj.username = request.user.username
+                obj.save()
+                
     def image_tag(self, obj):
         member = Member.objects.filter(id_member__username =obj.username).first()
         if member is not None and member.avatar:

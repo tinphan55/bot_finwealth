@@ -300,7 +300,6 @@ def update_stock_valuation(sender, instance, created, **kwargs):
             pass
 
     
-    
 class FundamentalAnalysisReportSegment(models.Model):
     report = models.ForeignKey(FundamentalAnalysisReport,on_delete=models.CASCADE,verbose_name = 'Báo cáo' )
     segment = models.TextField(verbose_name='Nội dung',null=True, blank=True)
