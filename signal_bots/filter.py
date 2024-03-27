@@ -159,25 +159,16 @@ def filter_stock_daily(risk=0.03):
     # strategy_2='Tenisball_ver0.1'
     buy_today = filter_stock_muanual(risk,strategy_1)#,strategy_2)
     date_filter = datetime.today().date() 
-    external_room = ChatGroupTelegram.objects.filter(type = 'external',is_signal =True,rank ='1' )
+    # external_room = ChatGroupTelegram.objects.filter(type = 'external',is_signal =True,rank ='1' )
     num_stock = len(buy_today)
     max_signal = min(num_stock, 5)
-    if max_signal ==0:
-        for group in external_room:
-            bot = Bot(token=group.token.token)
-            try:
-                bot.send_message(
-                    chat_id=group.chat_id, #room Khách hàng
-                    text=f"Không có cổ phiếu thỏa mãn tiêu chí được lọc trong ngày {date_filter} ")  
-            except:
-                pass
-    else:
+
+    if max_signal >0:
         for ticker in buy_today[:max_signal]:
             price = StockPriceFilter.objects.filter(ticker = ticker['ticker']).order_by('-date').first().close
             cut_loss_price = round(price*(100-ticker['ratio_cutloss'])/100,2)
             take_profit_price = round(price*(1+ticker['ratio_cutloss']/100*2),2)
             try:
-                
                 created = Signal.objects.create(
                         ticker = ticker['ticker'],
                         close = ticker['close'],
@@ -193,22 +184,10 @@ def filter_stock_daily(risk=0.03):
                         # rating_fundamental = ticker['fundamental'] ,
                         accumulation = ticker['accumulation']
                     )
-                # for group in external_room:
-                #         bot = Bot(token=group.token.token)
-                #         try:
-                #             bot.send_message(
-                #                 chat_id=group.chat_id,
-                #                 text= response)    
-                #         except:
-                #             pass
+            
             except Exception as e:
                         pass
-                        # chat_id = account.bot.chat_id
-                        # bot = Bot(token=account.bot.token)
-                        # bot.send_message(
-                        # chat_id='-870288807', #room nội bộ
-                        # text=f"Không lưu được tín hiệu {ticker['ticker']}, lỗi {e}   ")        
-    # detect_divergences(P=20, order=5, K=2)
+                   
     return 
 
 
