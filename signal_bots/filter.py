@@ -84,11 +84,9 @@ def date_filter_tenisball_strategy(df, risk, date_filter, strategy):
             #check nếu không có tín hiệu nào trước đó hoặc tín hiệu đã có nhưng ngược với tín hiệu hiện tại 
             if lated_signal is None:
                 back_test= OverviewBacktest.objects.filter(ticker=data['ticker'],strategy=strategy).first()
-                fa = StockFundamentalData.objects.filter(ticker =data['ticker'] ).first()
                 if back_test:
                     data['rating'] = back_test.rating_total
-                    data['fundamental'] = fa.fundamental_rating
-                    if data['rating'] > 50 and data['fundamental']> 50:
+                    if data['rating'] > 50:
                         buy_today.append(data)
     # tạo lệnh mua tự động
     buy_today.sort(key=lambda x: x['rating'], reverse=True)
@@ -141,10 +139,8 @@ def filter_stock_muanual( risk,strategy_1):
     if 0 <= now.weekday() <= 4 and open_section <= now  and time_difference > 900:
         get_info_stock_price_filter()
         print('tải data xong')
-        save_fa_valuation()
     else:
         print('Không cần tải data')
-    
     stock_prices = StockPriceFilter.objects.all().values()
     # lọc ra top cổ phiếu có vol>100k
     df = pd.DataFrame(stock_prices)  
