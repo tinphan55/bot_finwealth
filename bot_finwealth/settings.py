@@ -179,6 +179,10 @@ def custom_backup_filename(databasename, servername, extension,datetime, content
 
 DBBACKUP_FILENAME_TEMPLATE = custom_backup_filename
 
+FILE_UPLOAD_MAX_MEMORY_SIZE = 1024 * 1024 * 10  # 10MB
+# Kích thước tệp được phép tải lên (1MB)
+DATA_UPLOAD_MAX_MEMORY_SIZE = 1024 * 1024 * 10  # 10MB
+
 CRONJOBS = [
     # ('0 0 * * *', 'ecotrading.schedule.schedule_morning'),# chạy lúc 7 giờ sáng
     # ('30 4 * * 1-5', 'ecotrading.schedule.schedule_mid_trading_date'),# chạy lúc 11h30 sáng
@@ -186,6 +190,7 @@ CRONJOBS = [
     ('40 9 * * 1-5', 'signal_bots.models.stock_pitch_valuation'), # Chạy lúc 15:40 từ thứ 2 đến thứ 6
     # ('30 15 * * 1-5', 'portfolio.models.get_all_info_stock_price'), # Chạy lúc 21h từ thứ 2 đến thứ 6
     ('45 16 * * *', 'bot_user.models.cal_used_point'),
+    ('55 16 * * *', 'data_source.function.delete_file_pdf'),
 ]
 
     

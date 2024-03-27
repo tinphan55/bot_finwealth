@@ -624,6 +624,11 @@ def update_stockdataratio_yearly():
                     pass
         time.sleep(30)        
 
+def delete_file_pdf():
+    reports_with_file = FundamentalAnalysisReport.objects.filter(file__isnull=False)
+    for report in reports_with_file:
+        report.file.delete()
+
 import os
 import fitz  # PyMuPDF
 
@@ -692,3 +697,6 @@ def has_text(input_pdf):
 input_dir = r'C:\Users\PC\Downloads\ebook'  # Thay đổi đường dẫn đến thư mục chứa tệp PDF
 output_dir = r'C:\Users\PC\Downloads\ebook\output'  # Thay đổi đường dẫn thư mục xuất
 # split_pdfs_in_directory(input_dir, output_dir)
+
+
+

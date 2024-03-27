@@ -266,6 +266,7 @@ class FundamentalAnalysisReport(models.Model):
         if self.file:
             self.name = os.path.basename(self.file.name)
         super(FundamentalAnalysisReport, self).save(*args, **kwargs)
+     
     
     class Meta:
         verbose_name = 'Báo cáo phân tích'
@@ -372,7 +373,4 @@ class Tag (models.Model):
         
     
 
-
-
-   
 
