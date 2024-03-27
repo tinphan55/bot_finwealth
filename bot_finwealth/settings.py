@@ -185,7 +185,7 @@ CRONJOBS = [
     ('30 8 * * 1-5', 'signal_bots.filter.filter_stock_daily'),# chạy lúc 15h trưa
     ('40 9 * * 1-5', 'signal_bots.models.stock_pitch_valuation'), # Chạy lúc 15:40 từ thứ 2 đến thứ 6
     # ('30 15 * * 1-5', 'portfolio.models.get_all_info_stock_price'), # Chạy lúc 21h từ thứ 2 đến thứ 6
-    ('45 16 * * *', ' bot_user.models.cal_used_point'),
+    ('45 16 * * *', 'bot_user.models.cal_used_point'),
 ]
 
     
