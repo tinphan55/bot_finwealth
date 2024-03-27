@@ -16,7 +16,7 @@ class FundamentalAnalysisReportSegmentAdmin(admin.TabularInline):
 class FundamentalAnalysisReportAdmin(admin.ModelAdmin):
     model = FundamentalAnalysisReport
     inlines = [FundamentalAnalysisReportSegmentAdmin]
-    list_display = ['image_tag','username','name','date', 'source', 'valuation','get_report_tags']
+    list_display = ['image_tag','username','name','date', 'source', 'valuation','get_report_tags','modified_date']
     list_display_links =['name',]
     readonly_fields = ['username',]
     fieldsets = (
@@ -25,18 +25,18 @@ class FundamentalAnalysisReportAdmin(admin.ModelAdmin):
         }),
     )
     search_fields = ['tags__name',]
-    # list_filter = ['image_tag',]
+    list_filter = ['username',]
 
     def get_report_tags(self, obj):
         return ", ".join([str(tag) for tag in obj.tags.all()])  # Đổi obj.tags thành obj.tags.all()
     get_report_tags.short_description = 'Tags'  # Điều này sẽ hiển thị 'Tags' như tiêu đề của cột
 
     def image_tag(self, obj):
-        member = Member.objects.filter(id_member_id =obj.username).first()
+        member = Member.objects.filter(id_member__username =obj.username).first()
         if member is not None and member.avatar:
             return format_html('<img src="{}" style="border-radius: 50%; width: 40px; height: 40px; object-fit: cover;"/>'.format(member.avatar.url))
         else:
-            return format_html('<img src="/media/member/default-image.jpg"style="border-radius: 50%; width: 40px; height: 40px; object-fit: cover;"/>')                   
+            return format_html('<img src="/static/bot_user/img/default-img.jpg"style="border-radius: 50%; width: 40px; height: 40px; object-fit: cover;"/>')                   
 
     image_tag.short_description = 'Người chia sẽ'
 
@@ -55,15 +55,24 @@ admin.site.register(FundamentalAnalysisReport,FundamentalAnalysisReportAdmin)
 admin.site.register(Tag)
 
 class NewsAdmin(admin.ModelAdmin):
-    list_display = ['username', 'source', 'modified_date', 'tags','content',]
+    list_display = ['image_tag','username', 'source', 'modified_date', 'tags','content',]
     readonly_fields =['username',]
     search_fields = ['username', 'source', 'tags']
-    list_editable = ['content',]
+    # list_editable = ['content',]
+    list_filter = ['username',]
     def save_model(self, request, obj, form, change):
         # Lưu người dùng đang đăng nhập vào trường user nếu đang tạo cart mới
         if obj.username is None:
             obj.username = request.user.username
             obj.save()
+    def image_tag(self, obj):
+        member = Member.objects.filter(id_member__username =obj.username).first()
+        if member is not None and member.avatar:
+            return format_html('<img src="{}" style="border-radius: 50%; width: 40px; height: 40px; object-fit: cover;"/>'.format(member.avatar.url))
+        else:
+            return format_html('<img src="/static/bot_user/img/default-img.jpg"style="border-radius: 50%; width: 40px; height: 40px; object-fit: cover;"/>')                   
+
+    image_tag.short_description = 'Người chia sẽ'
     
 admin.site.register(News,NewsAdmin)
 

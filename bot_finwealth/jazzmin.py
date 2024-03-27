@@ -14,19 +14,19 @@ JAZZMIN_SETTINGS = {
     "site_logo_classes": "img-circle" ,
 
     # Relative path to a favicon for your site, will default to site_logo if absent (ideally 32x32 px)
-    "site_icon": "/portfolio/img/logo.PNG",
-    "site_logo": "/portfolio/img/logo.PNG",
+    "site_icon": "/bot_user/img/logo.jpg",
+    "site_logo": "/bot_user/img/logo.jpg",
 
 
     # Welcome text on the login screen
-    "welcome_sign": "Welcome to Finwealth",
+    "welcome_sign": "Welcome to Finwealth, Top 10 người cho Mon ăn nhiều báo cáo/tin tức nhất sẽ được Chị Mon (QP) thưởng tài khoản",
 
     # Copyright on the footer
     "copyright": "Finwealth",
 
     # List of model admins to search from the search bar, search bar omitted if excluded
     # If you want to use a single search field you dont need to use a list, you can use a simple string 
-    "search_model": ["signal_bots.Signal", ],
+    "search_model": ["data_source.FundamentalAnalysisReport", ],
 
     # Field name on user model that contains avatar ImageField/URLField/Charfield or a callable that receives the user
     "user_avatar": None,
@@ -96,12 +96,16 @@ JAZZMIN_SETTINGS = {
         "auth": "fas fa-users-cog",
         "auth.user": "fas fa-user",
         "auth.Group": "fas fa-users",
-        "stocklist.StrategyTrading": "fas fa-chess-queen",
-        "stocklist.Signaldaily": "far fa-lightbulb",
-        "stocklist.OverviewBacktest": "fas fa-check-circle",
-        "stocklist.TransactionBacktest": "fas fa-list-alt",
-        "stocklist.RatingStrategy": "fas fa-star",
-        "stocklist.ParamsOptimize": "fas fa-vials",
+        "manage_bots.StrategyTrading": "fas fa-chess-queen",
+        "signal_bots.Signal": "far fa-lightbulb",
+        "manage_bots.OverviewBacktest": "fas fa-check-circle",
+        "manage_bots.TransactionBacktest": "fas fa-list-alt",
+        "manage_bots.RatingStrategy": "fas fa-star",
+        "manage_bots.ParamsOptimize": "fas fa-vials",
+        "data_source.FundamentalAnalysisReport":"fas fa-file-alt",
+        "data_source.News":"fas fa-newspaper",
+        "bot_user.SharePoint":"fas fa-share-square",
+        "bot_user.Point":"fas fa-heart"
         
     },
     # Icons that are used when one is not manually specified

@@ -624,3 +624,71 @@ def update_stockdataratio_yearly():
                     pass
         time.sleep(30)        
 
+import os
+import fitz  # PyMuPDF
+
+def split_pdfs_in_directory(input_dir, output_dir, max_pages=240, max_size_mb=19):
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
+    for filename in os.listdir(input_dir):
+        if filename.endswith('.pdf'):
+            input_pdf = os.path.join(input_dir, filename)
+            if has_text(input_pdf):
+                output_subdir = os.path.join(output_dir, os.path.splitext(filename)[0])
+                os.makedirs(output_subdir, exist_ok=True)
+                split_pdf(input_pdf, output_subdir, max_pages, max_size_mb)
+
+def split_pdf(input_pdf, output_dir, max_pages=240, max_size_mb=19):
+    pdf_filename = os.path.basename(input_pdf)
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
+    pdf_document = fitz.open(input_pdf)
+    num_pages = pdf_document.page_count
+
+    num_files = num_pages // max_pages + (1 if num_pages % max_pages != 0 else 0)
+
+    page_count = 0
+    file_count = 1
+    pdf_writer = fitz.open()
+
+    for page_num in range(num_pages):
+        pdf_writer.insert_pdf(pdf_document, from_page=page_num, to_page=page_num)
+        page_count += 1
+
+        # Kiểm tra xem có đạt tới số trang tối đa hoặc kích thước tệp tối đa không
+        if (page_count == max_pages) or (get_pdf_length(pdf_writer) / (1024 * 1024) > max_size_mb):
+            output_pdf = os.path.join(output_dir, f'output_{file_count}_{pdf_filename}')
+            pdf_writer.save(output_pdf)
+            print(f'Created {output_pdf}')
+
+            # Reset các biến đếm và tạo một tệp PDF mới
+            page_count = 0
+            file_count += 1
+            pdf_writer = fitz.open()
+
+    # Lưu tệp PDF cuối cùng nếu còn trang cần xử lý
+    if page_count > 0:
+        output_pdf = os.path.join(output_dir, f'output_{file_count}_{pdf_filename}')
+        pdf_writer.save(output_pdf)
+        print(f'Created {output_pdf}')
+
+    pdf_document.close()
+
+def get_pdf_length(pdf_document):
+    data = pdf_document.write()
+    return len(data)
+
+def has_text(input_pdf):
+    pdf_document = fitz.open(input_pdf)
+    has_text = any(page.get_text() for page in pdf_document)
+    pdf_document.close()
+    return has_text
+
+
+
+# Sử dụng hàm:
+input_dir = r'C:\Users\PC\Downloads\ebook'  # Thay đổi đường dẫn đến thư mục chứa tệp PDF
+output_dir = r'C:\Users\PC\Downloads\ebook\output'  # Thay đổi đường dẫn thư mục xuất
+# split_pdfs_in_directory(input_dir, output_dir)
