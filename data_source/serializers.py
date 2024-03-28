@@ -63,4 +63,15 @@ class SignalSerializer(serializers.ModelSerializer):
         model= Signal
         fields =  ['ticker','signal','close','take_profit_price','cutloss_price','strategy','market_price']
 
+
+class StockIncomeStatementSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StockIncomeStatement
+        exclude = ['id']
+
+
+class StockBalanceSheetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StockBalanceSheet
+        exclude = ['id']
     

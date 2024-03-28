@@ -82,3 +82,17 @@ class SignalListAPIView(generics.ListAPIView):
     def get_queryset(self):
         queryset = Signal.objects.filter(is_closed=False,is_noti =True)
         return queryset 
+
+class StockIncomeStatementListAPIView(generics.ListAPIView):
+    serializer_class = StockIncomeStatementSerializer
+    def get_queryset(self):
+        stock = self.kwargs.get('ticker', '')
+        queryset = StockIncomeStatement.objects.filter(ticker__ticker = stock)
+        return queryset 
+    
+class StockBalanceSheetListAPIViewListAPIView(generics.ListAPIView):
+    serializer_class = StockBalanceSheetSerializer
+    def get_queryset(self):
+        stock = self.kwargs.get('ticker', '')
+        queryset = StockBalanceSheet.objects.filter(ticker__ticker = stock)
+        return queryset 
