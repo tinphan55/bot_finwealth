@@ -488,34 +488,39 @@ def financial_statements(stock,report_type,previous_year,quarter=True ):
     return data_dict 
 
 def save_income_statements():
-    list_stock  =StockOverview.objects.all()
+    list_stock = StockOverview.objects.all()
     for stock in list_stock:
-        data = financial_statements(stock,2,5,False)
-        if data:
-            for item in data:
-                try:
-                    values_data = item.get('Values')[0]  # Giả sử chỉ có một phần tử trong danh sách Values
-                    # Kiểm tra xem bản ghi có tồn tại trong cơ sở dữ liệu hay không
-                    existing_record = IncomeStatement.objects.filter(ticker =stock, period=values_data['Period'], name=item['Name']).first()
-                    if existing_record:
-                        continue  # Bỏ qua việc tạo mới nếu bản ghi đã tồn tại
-                    income_statement = IncomeStatement(
-                        ticker =stock,
-                        id=item['ID'],
-                        name=item['Name'],
-                        parent_id=item['ParentID'],
-                        expanded=item['Expanded'],
-                        level=item['Level'],
-                        field=item['Field'],
-                        period=values_data['Period'],
-                        year=values_data['Year'],
-                        quarter=values_data['Quarter'],
-                        value=values_data['Value']
-                    )
-                    income_statement.save()
-                except Exception as e:
-                    print(f"Error saving income statement: {e}")
-                    continue  # Bỏ qua phần tử lỗi và tiếp tục với phần tử tiếp theo trong danh sách
+        print(stock)
+        try:
+            data = financial_statements(stock,2, 5, False)
+            if data:
+                for item in data:
+                    values_list = item.get('Values')
+                    for values_data in values_list:
+                        try:
+                            existing_record = IncomeStatement.objects.filter(ticker=stock, period=values_data['Period'], name=item['Name']).first()
+                            if existing_record:
+                                continue  # Bỏ qua việc tạo mới nếu bản ghi đã tồn tại
+                            income_statement = IncomeStatement(
+                                ticker=stock,
+                                ID=item['ID'],
+                                Name=item['Name'],
+                                ParentID=item['ParentID'],
+                                Expanded=item['Expanded'],
+                                Level=item['Level'],
+                                Field=item['Field'],
+                                Period=values_data['Period'],
+                                Year=values_data['Year'],
+                                Quarter=values_data['Quarter'],
+                                Value=values_data['Value']
+                            )
+                            income_statement.save()
+                        except Exception as e:
+                            print(f"Error saving income statement: {e}")
+                            continue  # Bỏ qua phần tử lỗi và tiếp tục với phần tử tiếp theo trong danh sách
+        except Exception as e:
+            print(f"Error retrieving financial statements: {e}")
+            continue
         time.sleep(30)
 
 def save_balancesheet():

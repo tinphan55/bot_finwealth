@@ -388,7 +388,7 @@ class IncomeStatement(models.Model):
     period = models.CharField(max_length=10)
     year = models.IntegerField()
     quarter = models.IntegerField()
-    value = models.FloatField()
+    value = models.FloatField(null=True)
 
     def __str__(self):
         return f"IncomeStatement - id: {self.id}, name: {self.name}, period: {self.period}"
