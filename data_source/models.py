@@ -183,6 +183,7 @@ class StockOverviewDataTrading(models.Model):
         self.volume_avg_cr_200d = round(StockPriceFilter.objects.filter(ticker =self.ticker).order_by('-date_time')[:200].aggregate(avg_volume_200=Avg('volume'))['avg_volume_200'],3)
         valuation = StockValuation.objects.filter(ticker__ticker = self.ticker,report_date__gte = datetime.now().date() -timedelta(days=200) )
         avg_target_price  = valuation.aggregate(avg_target_price=Avg('target_price'))['avg_target_price']
+        print(avg_target_price)
         if self.avg_target_price !=0:
             self.avg_target_price =round(avg_target_price,3)
             self.up_size = round(self.avg_target_price/self.price -1,3)
