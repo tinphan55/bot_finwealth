@@ -159,7 +159,7 @@ class PromotionPoint(models.Model):
 @receiver([post_save,post_delete] ,sender=PromotionPoint)
 def update_user_points(sender, instance, **kwargs):
     created = kwargs.get('created', False)
-    user = Member.objects.get(id_member__username = instance.user)
+    user = instance.user
     point = Point.objects.get(user=user)
     if created:
         point.promotion_points += instance.points
