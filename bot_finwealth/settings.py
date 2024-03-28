@@ -65,8 +65,12 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware', 
+    'django_auto_logout.middleware.auto_logout',
 ]
-
+AUTO_LOGOUT = {
+    'IDLE_TIME': timedelta(minutes=360),
+    'REDIRECT_TO_LOGIN_IMMEDIATELY': True,
+}
 ROOT_URLCONF = 'bot_finwealth.urls'
 
 TEMPLATES = [

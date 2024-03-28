@@ -87,7 +87,7 @@ def create_cutloss_signal(sender, instance, created, **kwargs):
                 #         pass
                 
 def stock_pitch_valuation():
-    stock_pitch = StockOverviewDataTrading.objects.filter(up_size__gte=0)
+    stock_pitch = StockOverviewDataTrading.objects.filter(up_size__gte=0.05)
     
     # Lọc ra các ticker không tồn tại trong stock_pitch
     signals_to_delete = Signal.objects.filter(strategy__name="Valuation").exclude(ticker__in=stock_pitch.values_list('ticker__ticker', flat=True))
