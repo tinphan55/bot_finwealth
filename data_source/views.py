@@ -90,7 +90,7 @@ class StockIncomeStatementListAPIView(generics.ListAPIView):
         queryset = StockIncomeStatement.objects.filter(ticker__ticker = stock)
         return queryset 
     
-class StockBalanceSheetListAPIViewListAPIView(generics.ListAPIView):
+class StockBalanceSheetListAPIView(generics.ListAPIView):
     serializer_class = StockBalanceSheetSerializer
     def get_queryset(self):
         stock = self.kwargs.get('ticker', '')
