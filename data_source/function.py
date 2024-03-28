@@ -521,34 +521,38 @@ def save_income_statements():
         time.sleep(30)
 
 def save_balancesheet():
-    list_stock  =StockOverview.objects.all()
+    list_stock = StockOverview.objects.all()
     for stock in list_stock:
-        data = financial_statements(stock,1,5,False)
-        if data:
-            for item in data:
-                try:
-                    values_data = item.get('Values')[0]  # Giả sử chỉ có một phần tử trong danh sách Values
-                    # Kiểm tra xem bản ghi có tồn tại trong cơ sở dữ liệu hay không
-                    existing_record = StockBalanceSheet.objects.filter(ticker =stock, period=values_data['Period'], name=item['Name']).first()
-                    if existing_record:
-                        continue
-                    balance_sheet = StockBalanceSheet(
-                        ticker =stock,
-                        id=item['ID'],
-                        name=item['Name'],
-                        parent_id=item['ParentID'],
-                        expanded=item['Expanded'],
-                        level=item['Level'],
-                        field=item['Field'],
-                        period=values_data['Period'],
-                        year=values_data['Year'],
-                        quarter=values_data['Quarter'],
-                        value=values_data['Value']
-                    )
-                    balance_sheet.save()
-                except Exception as e:
-                    print(f"Error saving balance sheet: {e}")
-                    continue
+        try:
+            data = financial_statements(stock, 1, 5, False)
+            if data:
+                for item in data:
+                    values_list = item.get('Values')
+                    for values_data in values_list:
+                        try:
+                            existing_record = StockBalanceSheet.objects.filter(ticker=stock,year =values_data['Year'],  period=values_data['Period'], name=item['Name']).first()
+                            if existing_record:
+                                continue  # Bỏ qua việc tạo mới nếu bản ghi đã tồn tại
+                            balance_sheet = StockBalanceSheet(
+                                ticker=stock,
+                                id=item['ID'],
+                                name=item['Name'],
+                                parent_id=item['ParentID'],
+                                expanded=item['Expanded'],
+                                level=item['Level'],
+                                field=item['Field'],
+                                period=values_data['Period'],
+                                year=values_data['Year'],
+                                quarter=values_data['Quarter'],
+                                value=values_data['Value']
+                            )
+                            balance_sheet.save()
+                        except Exception as e:
+                            print(f"Error saving balance sheet: {e}")
+                            continue  # Bỏ qua phần tử lỗi và tiếp tục với phần tử tiếp theo trong danh sách
+        except Exception as e:
+            print(f"Error retrieving financial statements: {e}")
+            continue
         time.sleep(30)
 
 
