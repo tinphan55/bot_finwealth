@@ -377,7 +377,7 @@ class Tag (models.Model):
 
 
 class IncomeStatement(models.Model):
-    ticker = models.ForeignKey(StockOverview, on_delete=models.CASCADE, verbose_name='Cổ phiếu')
+    ticker = models.ForeignKey(StockOverview, on_delete=models.CASCADE,null=True, verbose_name='Cổ phiếu')
     id = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=255)
     parent_id = models.IntegerField()
@@ -395,7 +395,7 @@ class IncomeStatement(models.Model):
 
 
 class BalanceSheet(models.Model):
-    ticker = models.ForeignKey(StockOverview, on_delete=models.CASCADE, verbose_name='Cổ phiếu')
+    ticker = models.ForeignKey(StockOverview, on_delete=models.CASCADE,null=True, verbose_name='Cổ phiếu')
     id = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=255)
     parent_id = models.IntegerField()
