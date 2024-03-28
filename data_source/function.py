@@ -503,16 +503,16 @@ def save_income_statements():
                                 continue  # Bỏ qua việc tạo mới nếu bản ghi đã tồn tại
                             income_statement = IncomeStatement(
                                 ticker=stock,
-                                ID=item['ID'],
-                                Name=item['Name'],
-                                ParentID=item['ParentID'],
-                                Expanded=item['Expanded'],
-                                Level=item['Level'],
-                                Field=item['Field'],
-                                Period=values_data['Period'],
-                                Year=values_data['Year'],
-                                Quarter=values_data['Quarter'],
-                                Value=values_data['Value']
+                                id=item['ID'],
+                                name=item['Name'],
+                                parent_id=item['ParentID'],
+                                expanded=item['Expanded'],
+                                level=item['Level'],
+                                field=item['Field'],
+                                period=values_data['Period'],
+                                year=values_data['Year'],
+                                quarter=values_data['Quarter'],
+                                value=values_data['Value']
                             )
                             income_statement.save()
                         except Exception as e:
