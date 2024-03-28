@@ -498,9 +498,9 @@ def save_income_statements():
                     values_list = item.get('Values')
                     for values_data in values_list:
                         try:
-                            income_statement = IncomeStatement(
+                            income_statement = DataIncomeStatement(
                                 ticker=stock,
-                                id=item['ID'],
+                                code=item['ID'],
                                 name=item['Name'],
                                 parent_id=item['ParentID'],
                                 expanded=item['Expanded'],
@@ -529,10 +529,10 @@ def save_balancesheet():
                 try:
                     values_data = item.get('Values')[0]  # Giả sử chỉ có một phần tử trong danh sách Values
                     # Kiểm tra xem bản ghi có tồn tại trong cơ sở dữ liệu hay không
-                    existing_record = BalanceSheet.objects.filter(ticker =stock, period=values_data['Period'], name=item['Name']).first()
+                    existing_record = DataBalanceSheet.objects.filter(ticker =stock, period=values_data['Period'], name=item['Name']).first()
                     if existing_record:
                         continue
-                    balance_sheet = BalanceSheet(
+                    balance_sheet = DataBalanceSheet(
                         ticker =stock,
                         id=item['ID'],
                         name=item['Name'],
