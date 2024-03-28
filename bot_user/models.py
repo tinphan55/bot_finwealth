@@ -21,7 +21,7 @@ class Member(models.Model):
         verbose_name_plural = 'Cập nhật thêm thông tin(bắc buộc)'
     
     def __str__(self):
-        return self.id_member.username
+        return f"{self.id_member.first_name} {self.id_member.last_name}"
 
 class Point(models.Model):
     user = models.ForeignKey(Member, on_delete=models.CASCADE)

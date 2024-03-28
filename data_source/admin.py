@@ -1,6 +1,7 @@
 from django.contrib import admin
 from .models import *
 from bot_user.models import Member
+from django.contrib.auth.models import User
 from django.utils.html import format_html
 
 # Register your models here.
@@ -16,7 +17,7 @@ class FundamentalAnalysisReportSegmentAdmin(admin.TabularInline):
 class FundamentalAnalysisReportAdmin(admin.ModelAdmin):
     model = FundamentalAnalysisReport
     inlines = [FundamentalAnalysisReportSegmentAdmin]
-    list_display = ['image_tag','username','name','date', 'source', 'valuation','get_report_tags','modified_date']
+    list_display = ['image_tag','get_fullname','name','date', 'source', 'valuation','get_report_tags','modified_date']
     list_display_links =['name',]
     readonly_fields = ['username',]
     fieldsets = (
@@ -40,6 +41,12 @@ class FundamentalAnalysisReportAdmin(admin.ModelAdmin):
 
     image_tag.short_description = 'Người chia sẽ'
 
+    def get_fullname(self,obj):
+        user = User.objects.get(username =obj.username)
+        full_name = f"{user.first_name} {user.last_name}"
+        return full_name
+    get_fullname.short_description = 'Tên đầy đủ'
+
     def save_model(self, request, obj, form, change):
         # Lưu người dùng đang đăng nhập vào trường user nếu đang tạo cart mới
         if not change:
@@ -56,7 +63,7 @@ admin.site.register(FundamentalAnalysisReport,FundamentalAnalysisReportAdmin)
 admin.site.register(Tag)
 
 class NewsAdmin(admin.ModelAdmin):
-    list_display = ['image_tag','username', 'source', 'modified_date', 'tags','content',]
+    list_display = ['image_tag','get_fullname', 'source', 'modified_date', 'tags','content',]
     readonly_fields =['username',]
     search_fields = ['username', 'source', 'tags']
     # list_editable = ['content',]
@@ -67,7 +74,12 @@ class NewsAdmin(admin.ModelAdmin):
             if not change:
                 obj.username = request.user.username
                 obj.save()
-                
+
+    def get_fullname(self,obj):
+        user = User.objects.get(username =obj.username)
+        full_name = f"{user.first_name} {user.last_name}"
+        return full_name
+    get_fullname.short_description = 'Tên đầy đủ'
     def image_tag(self, obj):
         member = Member.objects.filter(id_member__username =obj.username).first()
         if member is not None and member.avatar:
