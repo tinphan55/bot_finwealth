@@ -378,7 +378,7 @@ class Tag (models.Model):
 
 class DataIncomeStatement(models.Model):
     ticker = models.ForeignKey(StockOverview, on_delete=models.CASCADE, verbose_name='Cổ phiếu')
-    code = models.IntegerField(primary_key=True)
+    code = models.IntegerField()
     name = models.CharField(max_length=255)
     parent_id = models.IntegerField()
     expanded = models.BooleanField()
@@ -396,7 +396,7 @@ class DataIncomeStatement(models.Model):
 
 class DataBalanceSheet(models.Model):
     ticker = models.ForeignKey(StockOverview, on_delete=models.CASCADE, verbose_name='Cổ phiếu')
-    code = models.IntegerField(primary_key=True)
+    code = models.IntegerField()
     name = models.CharField(max_length=255)
     parent_id = models.IntegerField()
     expanded = models.BooleanField()
