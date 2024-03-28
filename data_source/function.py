@@ -498,7 +498,7 @@ def save_income_statements():
                     values_list = item.get('Values')
                     for values_data in values_list:
                         try:
-                            existing_record = IncomeStatement.objects.filter(ticker=stock, period=values_data['Period'], name=item['Name']).first()
+                            existing_record = IncomeStatement.objects.filter(ticker=stock,year=values_data['Year'], period=values_data['Period'], name=item['Name']).first()
                             if existing_record:
                                 continue  # Bỏ qua việc tạo mới nếu bản ghi đã tồn tại
                             income_statement = IncomeStatement(
