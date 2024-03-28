@@ -67,11 +67,11 @@ class SignalSerializer(serializers.ModelSerializer):
 class StockIncomeStatementSerializer(serializers.ModelSerializer):
     class Meta:
         model = StockIncomeStatement
-        exclude = ['id']
+        exclude = ['id','code','expanded','field', 'ticker']
 
 
 class StockBalanceSheetSerializer(serializers.ModelSerializer):
     class Meta:
         model = StockBalanceSheet
-        exclude = ['id']
+        exclude = ['id','code','expanded','field', 'ticker']
     
