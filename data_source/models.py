@@ -376,7 +376,7 @@ class Tag (models.Model):
         
 
 
-class DataIncomeStatement(models.Model):
+class StockIncomeStatement(models.Model):
     ticker = models.ForeignKey(StockOverview, on_delete=models.CASCADE, verbose_name='Cổ phiếu')
     code = models.IntegerField()
     name = models.CharField(max_length=255)
@@ -394,7 +394,7 @@ class DataIncomeStatement(models.Model):
         return f"IncomeStatement - id: {self.id}, name: {self.name}, period: {self.period}"
 
 
-class DataBalanceSheet(models.Model):
+class StockBalanceSheet(models.Model):
     ticker = models.ForeignKey(StockOverview, on_delete=models.CASCADE, verbose_name='Cổ phiếu')
     code = models.IntegerField()
     name = models.CharField(max_length=255)
