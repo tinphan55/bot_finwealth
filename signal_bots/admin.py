@@ -2,6 +2,7 @@ from django.contrib import admin
 from .models import *
 from django.urls import reverse
 from django.utils.html import format_html
+from django.db.models import Q
 
 # Register your models here.
 class SignalAdmin(admin.ModelAdmin):
