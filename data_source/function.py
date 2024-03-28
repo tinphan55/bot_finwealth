@@ -496,10 +496,11 @@ def save_income_statements():
                 try:
                     values_data = item.get('Values')[0]  # Giả sử chỉ có một phần tử trong danh sách Values
                     # Kiểm tra xem bản ghi có tồn tại trong cơ sở dữ liệu hay không
-                    existing_record = IncomeStatement.objects.filter(period=values_data['Period'], name=item['Name']).first()
+                    existing_record = IncomeStatement.objects.filter(ticker =stock, period=values_data['Period'], name=item['Name']).first()
                     if existing_record:
                         continue  # Bỏ qua việc tạo mới nếu bản ghi đã tồn tại
                     income_statement = IncomeStatement(
+                        ticker =stock,
                         id=item['ID'],
                         name=item['Name'],
                         parent_id=item['ParentID'],
@@ -524,8 +525,13 @@ def save_balancesheet():
         if data:
             for item in data:
                 try:
-                    values_data = item.get('Values')[0]
+                    values_data = item.get('Values')[0]  # Giả sử chỉ có một phần tử trong danh sách Values
+                    # Kiểm tra xem bản ghi có tồn tại trong cơ sở dữ liệu hay không
+                    existing_record = BalanceSheet.objects.filter(ticker =stock, period=values_data['Period'], name=item['Name']).first()
+                    if existing_record:
+                        continue
                     balance_sheet = BalanceSheet(
+                        ticker =stock,
                         id=item['ID'],
                         name=item['Name'],
                         parent_id=item['ParentID'],
