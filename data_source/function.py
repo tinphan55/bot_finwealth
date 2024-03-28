@@ -453,65 +453,95 @@ def compare_ratio_yearly(year):
     data = return_json_data(data_list)
     return data
 
+type_report = {'balance_sheet': 1, 'income_statement': 2, 'direct_cash_flow_statement': 3, 'indirect_cash_flow_statement': 4}
 
-def financial_statements(stock,previous_year,quarter=True ):
+
+def financial_statements(stock,report_type,previous_year,quarter=True ):
     if quarter ==True:
         quarter=1
     else:
         quarter=0
     year = datetime.now().year
-    type_report = {'balance_sheet': 1, 'income_statement': 2, 'direct_cash_flow_statement': 3, 'indirect_cash_flow_statement': 4}
-    financial_statements = []
-    for report_type, report_number in type_report.items():
-        report = {}
-        url = f"https://www.bsc.com.vn/api/Data/Finance/LastestFinancialReports?symbol={stock}&type={report_number}&year={year}&quarter={quarter}&count={previous_year}"
-        payload = {}
-        headers = {
-        'Accept': 'application/json, text/javascript, */*; q=0.01',
-        'Accept-Language': 'vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7',
-        'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive',
-        'Content-Type': 'application/json',
-        'Origin': 'https://www.vndirect.com.vn',
-        'Pragma': 'no-cache',
-        'Referer': 'https://www.vndirect.com.vn/',
-        'Sec-Fetch-Dest': 'empty',
-        'Sec-Fetch-Mode': 'cors',
-        'Sec-Fetch-Site': 'same-site',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'sec-ch-ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
-        'sec-ch-ua-mobile': '?0',
-        'sec-ch-ua-platform': '"Windows"',
-        'Cookie': 'NSC_XfcTfswfs_443=ffffffff091da14845525d5f4f58455e445a4a42378b'
-        }
-        response = requests.request("GET", url, headers=headers, data=payload)
-        data = {report_type: response.text}
-        financial_statements.append(data)
-        return financial_statements
+    url = f"https://www.bsc.com.vn/api/Data/Finance/LastestFinancialReports?symbol={stock}&type={report_type}&year={year}&quarter={quarter}&count={previous_year}"
+    payload = {}
+    headers = {
+    'Accept': 'application/json, text/javascript, */*; q=0.01',
+    'Accept-Language': 'vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive',
+    'Content-Type': 'application/json',
+    'Origin': 'https://www.vndirect.com.vn',
+    'Pragma': 'no-cache',
+    'Referer': 'https://www.vndirect.com.vn/',
+    'Sec-Fetch-Dest': 'empty',
+    'Sec-Fetch-Mode': 'cors',
+    'Sec-Fetch-Site': 'same-site',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'sec-ch-ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+    'sec-ch-ua-mobile': '?0',
+    'sec-ch-ua-platform': '"Windows"',
+    'Cookie': 'NSC_XfcTfswfs_443=ffffffff091da14845525d5f4f58455e445a4a42378b'
+    }
+    response = requests.request("GET", url, headers=headers, data=payload)
+    data = response.text
+    data_dict = json.loads(data)
+    return data_dict 
 
+def save_income_statements():
+    list_stock  =StockOverview.objects.all()
+    for stock in list_stock:
+        data = financial_statements(stock,2,5,False)
+        if data:
+            for item in data:
+                try:
+                    values_data = item.get('Values')[0]  # Giả sử chỉ có một phần tử trong danh sách Values
+                    # Kiểm tra xem bản ghi có tồn tại trong cơ sở dữ liệu hay không
+                    existing_record = IncomeStatement.objects.filter(period=values_data['Period'], name=item['Name']).first()
+                    if existing_record:
+                        continue  # Bỏ qua việc tạo mới nếu bản ghi đã tồn tại
+                    income_statement = IncomeStatement(
+                        id=item['ID'],
+                        name=item['Name'],
+                        parent_id=item['ParentID'],
+                        expanded=item['Expanded'],
+                        level=item['Level'],
+                        field=item['Field'],
+                        period=values_data['Period'],
+                        year=values_data['Year'],
+                        quarter=values_data['Quarter'],
+                        value=values_data['Value']
+                    )
+                    income_statement.save()
+                except Exception as e:
+                    print(f"Error saving income statement: {e}")
+                    continue  # Bỏ qua phần tử lỗi và tiếp tục với phần tử tiếp theo trong danh sách
+        time.sleep(30)
 
-#StockOverview
-# date = datetime.now().date() - timedelta(days=7)
-# list_stock = StockPriceFilter.objects.filter(date=date)
-# for item in list_stock[1158:]:
-#     print(item.ticker)
-#     try:
-#         data = get_overview_stock(item.ticker)
-#         ticker = data['code']
-#         print(ticker)
-#         # Kiểm tra xem ticker đã tồn tại trong StockOverview hay chưa
-#         stock_overview = StockOverview.objects.get(ticker=ticker)
-#     except StockOverview.DoesNotExist:
-#         # Tạo đối tượng StockOverview nếu ticker chưa tồn tại
-#         stock_overview = StockOverview.objects.create(
-#             ticker=ticker,
-#             company_name=data['companyName'],
-#             stock_exchange=data['floor'],
-#             listed_date=data['listedDate'],
-#             introduce=data['introduce']
-#         )
-
-
+def save_balancesheet():
+    list_stock  =StockOverview.objects.all()
+    for stock in list_stock:
+        data = financial_statements(stock,1,5,False)
+        if data:
+            for item in data:
+                try:
+                    values_data = item.get('Values')[0]
+                    balance_sheet = BalanceSheet(
+                        id=item['ID'],
+                        name=item['Name'],
+                        parent_id=item['ParentID'],
+                        expanded=item['Expanded'],
+                        level=item['Level'],
+                        field=item['Field'],
+                        period=values_data['Period'],
+                        year=values_data['Year'],
+                        quarter=values_data['Quarter'],
+                        value=values_data['Value']
+                    )
+                    balance_sheet.save()
+                except Exception as e:
+                    print(f"Error saving balance sheet: {e}")
+                    continue
+        time.sleep(30)
 
 
 

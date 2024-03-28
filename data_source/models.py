@@ -374,6 +374,36 @@ class Tag (models.Model):
        
     
         
-    
 
 
+class IncomeStatement(models.Model):
+    id = models.IntegerField(primary_key=True)
+    name = models.CharField(max_length=255)
+    parent_id = models.IntegerField()
+    expanded = models.BooleanField()
+    level = models.IntegerField()
+    field = models.CharField(max_length=255, blank=True, null=True)
+    # Giả sử Period sẽ được lưu dưới dạng CharField với độ dài đủ lớn để chứa chuỗi "Q4 2023"
+    period = models.CharField(max_length=10)
+    year = models.IntegerField()
+    quarter = models.IntegerField()
+    value = models.FloatField()
+
+    def __str__(self):
+        return f"IncomeStatement - id: {self.id}, name: {self.name}, period: {self.period}"
+
+
+class BalanceSheet(models.Model):
+    id = models.IntegerField(primary_key=True)
+    name = models.CharField(max_length=255)
+    parent_id = models.IntegerField()
+    expanded = models.BooleanField()
+    level = models.IntegerField()
+    field = models.CharField(max_length=255, blank=True, null=True)
+    period = models.CharField(max_length=10)
+    year = models.IntegerField()
+    quarter = models.IntegerField()
+    value = models.FloatField(null=True)  # Cho phép giá trị là null
+
+    def __str__(self):
+        return f"BalanceSheet - id: {self.id}, name: {self.name}, period: {self.period}"
