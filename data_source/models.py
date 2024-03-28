@@ -264,8 +264,9 @@ class FundamentalAnalysisReport(models.Model):
         # Calculate checksum and save the object
         if not self.pk:
             self.file_checksum = self.calculate_checksum(self.file)
-        if self.file:
-            self.name = os.path.basename(self.file.name)
+            if self.file:
+                self.name = os.path.basename(self.file.name)
+        
         super(FundamentalAnalysisReport, self).save(*args, **kwargs)
      
     

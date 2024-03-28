@@ -52,6 +52,8 @@ class FundamentalAnalysisReportAdmin(admin.ModelAdmin):
         if not change:
             obj.username = request.user.username
             obj.save()
+        else:
+            obj.save()
 
 # class StockFundamentalDataAdmin(admin.ModelAdmin):
 #     model= StockFundamentalData

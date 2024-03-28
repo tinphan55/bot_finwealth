@@ -9,10 +9,7 @@ from datetime import datetime
 # Create your models here.
 class Member(models.Model):
     id_member= models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
-    firstname = models.CharField(max_length=255)
-    lastname = models.CharField(max_length=255)
     phone = models.IntegerField(null=True)
-    joined_date = models.DateField(null=True)
     avatar = models.ImageField(upload_to='member', null = True, blank=True,default = "")
     total_points = models.IntegerField(default=0, verbose_name='Tổng điểm')
 
@@ -22,6 +19,15 @@ class Member(models.Model):
     
     def __str__(self):
         return f"{self.id_member.first_name} {self.id_member.last_name}"
+    
+@receiver([post_save,post_delete] ,sender=User)
+def create_member_and_point(sender, instance, **kwargs):
+    created = kwargs.get('created', False)
+    if created:
+        member, create_member = Member.objects.get_or_create(id_member = instance, phone ='0')
+        point, create_point = Point.objects.get_or_create(user=member)
+
+
 
 class Point(models.Model):
     user = models.ForeignKey(Member, on_delete=models.CASCADE)
@@ -105,8 +111,8 @@ class SharePoint(models.Model):
 @receiver([post_save,post_delete] ,sender=SharePoint)
 def update_user_points(sender, instance, **kwargs):
     created = kwargs.get('created', False)
-    user_give = Member.objects.get(id_member__username = instance.user)
-    user_recipient = Member.objects.get(id_member__username = instance.recipient)
+    user_give = instance.user
+    user_recipient =  instance.recipient
     point_user_give, created_give = Point.objects.get_or_create(user=user_give)
     point_user_recipient, created_recipient = Point.objects.get_or_create(user=user_recipient)
     if created:
