@@ -27,8 +27,11 @@ class NewsCreateAPIView(generics.CreateAPIView):
     serializer_class = NewsSerializer
 
 class NewsListAPIView(generics.ListAPIView):
-    queryset = News.objects.all()
     serializer_class = NewsSerializer
+    def get_queryset(self):
+        stock = self.kwargs.get('ticker', '')  # Sử dụng kwargs thay vì query_params
+        queryset = News.objects.filter(tags=stock).order_by('-modified_date')
+        return queryset
 
 class StockPriceFilterAPIViews(generics.ListAPIView):
     serializer_class = StockPriceFilterSerializer
